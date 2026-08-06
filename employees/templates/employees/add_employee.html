@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Add Employee</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px; direction: ltr; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add New Employee</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save Employee</button>
+        </form>
+    </div>
+</body>
+</html>
