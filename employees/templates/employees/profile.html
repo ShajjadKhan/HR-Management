@@ -1,0 +1,73 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold m-0 lang-text" data-en="Employee Profile" data-ar="ملف الموظف">Employee Profile: {{ employee.name }}</h3>
+        <div class="d-flex gap-2">
+            <button id="editToggleBtn" onclick="enableEditing()" class="btn btn-warning fw-bold px-3"><i class="bi bi-lock-fill me-1"></i> Enable Edit</button>
+            <a href="/employees/delete/{{ employee.id }}/" onclick="return confirm('Are you sure you want to permanently delete this employee?');" class="btn btn-danger fw-bold px-3 hidden-until-edit" style="display: none;"><i class="bi bi-trash-fill me-1"></i> Delete Worker</a>
+        </div>
+    </div>
+    <hr class="my-3 opacity-25">
+    <div class="row g-4">
+        <div class="col-md-4 text-center">
+            {% if employee.photo %}
+                <img src="{{ employee.photo.url }}" class="img-fluid rounded-3 shadow mb-3 border border-secondary border-opacity-20" style="max-height: 220px; object-fit: cover;">
+            {% else %}
+                <div class="p-5 rounded-3 text-muted border mb-3" style="background-color: var(--body-bg);">No Photo Uploaded</div>
+            {% endif %}
+
+            <div class="card p-3 text-start hidden-until-edit shadow-sm" style="display: none; background-color: var(--body-bg);">
+                <h6 class="fw-bold text-primary mb-2 lang-text" data-en="Salary Increment (%)" data-ar="زيادة الراتب (%)">Salary Increment (%)</h6>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="number" step="0.01" name="increment_percentage" class="form-control form-control-sm mb-2" placeholder="e.g. 10" required>
+                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Apply Increase</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <fieldset id="formFieldset" disabled>
+                    <div class="row g-3">
+                        {% for field in form %}
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted mb-1">{{ field.label }}</label>
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-4 py-2 hidden-until-edit" style="display: none;">Save Changes</button>
+                </fieldset>
+            </form>
+
+            <hr class="my-4 opacity-25">
+            <h5 class="fw-bold mb-3 lang-text" data-en="Monthly Salary Payment Tracker" data-ar="متابعة دفع الراتب الشهري">Monthly Salary Payment Tracker</h5>
+            <div class="row g-2">
+                {% for m in months_status %}
+                    <div class="col-6 col-sm-4 col-md-3">
+                        <form method="POST" class="m-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="mark_paid_month" value="{{ m.name }}">
+                            <button type="submit" class="btn btn-sm w-100 fw-bold py-2 {% if m.is_paid %}btn-success{% else %}btn-outline-primary{% endif %}">
+                                {{ m.name }}<br>
+                                <small style="font-size: 10px;">{% if m.is_paid %}✓ PAID{% else %}Mark Paid{% endif %}</small>
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input, select, textarea').forEach(el => el.classList.add('form-control'));
+    function enableEditing() {
+        document.getElementById('formFieldset').removeAttribute('disabled');
+        document.getElementById('editToggleBtn').style.display = 'none';
+        document.querySelectorAll('.hidden-until-edit').forEach(el => el.style.display = 'block');
+    }
+</script>
+{% endblock %}

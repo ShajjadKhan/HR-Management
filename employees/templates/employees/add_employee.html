@@ -1,23 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Add Employee</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px; direction: ltr; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { background-color: #28a745; color: white; font-weight: bold; cursor: pointer; border: none; }
-        button:hover { background-color: #218838; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Add New Employee</h2>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Save Employee</button>
-        </form>
+{% extends 'employees/base.html' %}
+{% block content %}
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 750px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold m-0 lang-text" data-en="Add New Employee" data-ar="إضافة موظف جديد">Add New Employee</h4>
+        <a href="/employees/dashboard/" class="btn btn-outline-secondary btn-sm lang-text" data-en="← Back" data-ar="← رجوع">← Back</a>
     </div>
-</body>
-</html>
+    <hr class="my-2 opacity-25">
+
+    {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show my-3" role="alert">
+            <i class="bi bi-exclamation-octagon-fill me-2 fs-5"></i>
+            <strong>Duplicate or Invalid Record Blocked!</strong>
+            <ul class="mb-0 mt-2 ps-3">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-3">
+            {% for field in form %}
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1 fw-bold"><i class="bi bi-x-circle me-1"></i>{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-bold mt-4 py-2 lang-text" data-en="Save Employee Record" data-ar="حفظ سجل الموظف">Save Employee Record</button>
+    </form>
+</div>
+<script>
+    document.querySelectorAll('input, select, textarea').forEach(el => el.classList.add('form-control'));
+</script>
+{% endblock %}

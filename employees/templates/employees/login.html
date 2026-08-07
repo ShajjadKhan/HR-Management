@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Client Portal Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; direction: ltr; }
+        .login-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; font-weight: bold; cursor: pointer; border: none; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Client Portal Login</h2>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<div class="card p-4 mx-auto" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="Client Companies Directory" data-ar="دليل الشركات العميلة">Client Companies Directory</h4>
+            <small class="text-muted lang-text" data-en="Manage all client companies using your manpower services" data-ar="إدارة جميع الشركات العميلة التي تستخدم خدماتك">Manage all client companies using your manpower services</small>
+        </div>
+        <a href="/employees/add-company/" class="btn btn-primary btn-sm fw-bold lang-text" data-en="+ Add Client Company" data-ar="+ إضافة شركة عميلة">+ Add Client Company</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="lang-text" data-en="Company Name" data-ar="اسم الشركة">Company Name</th>
+                    <th class="lang-text" data-en="Assigned Workers" data-ar="عدد الموظفين">Assigned Workers</th>
+                    <th class="text-end lang-text" data-en="Action" data-ar="الإجراء">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <span class="fw-bold fs-6">{{ company.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 px-3 py-2 fw-semibold">
+                            {{ company.employee_set.count }} Worker(s)
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="/employees/delete-company/{{ company.id }}/" onclick="return confirm('Are you sure you want to delete {{ company.name }}?');" class="btn btn-sm btn-outline-danger fw-semibold">
+                            <i class="bi bi-trash"></i> Delete Company
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-muted lang-text" data-en="No client companies found. Click '+ Add Client Company' to create one." data-ar="لا يوجد شركات عميلة. اضغط على '+ إضافة شركة عميلة'">No client companies found. Click '+ Add Client Company' to create one.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

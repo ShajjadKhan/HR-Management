@@ -1,0 +1,70 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="All Employees Directory" data-ar="دليل جميع الموظفين">All Employees Directory</h4>
+            <small class="text-muted lang-text" data-en="Comprehensive view of all active subcontractor workers" data-ar="عرض شامل لجميع العمال المسجلين">Comprehensive view of all active subcontractor workers</small>
+        </div>
+        <a href="/employees/add/" class="btn btn-primary btn-sm fw-bold lang-text" data-en="+ Add New Worker" data-ar="+ إضافة عامل جديد">+ Add New Worker</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="lang-text" data-en="Worker" data-ar="الموظف">Worker</th>
+                    <th class="lang-text" data-en="Iqama / Passport" data-ar="الإقامة / الجواز">Iqama / Passport</th>
+                    <th class="lang-text" data-en="Client Assignment" data-ar="الشركة التابع لها">Client Assignment</th>
+                    <th class="lang-text" data-en="Position" data-ar="المهنة">Position</th>
+                    <th class="lang-text" data-en="Basic Salary" data-ar="الراتب">Basic Salary</th>
+                    <th class="lang-text" data-en="Receiving Amount" data-ar="مبلغ العقد">Receiving Amount</th>
+                    <th class="lang-text" data-en="Iqama Expiry" data-ar="تاريخ الإقامة">Iqama Expiry</th>
+                    <th class="text-end lang-text" data-en="Action" data-ar="الإجراء">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if emp.photo %}
+                                <img src="{{ emp.photo.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">{{ emp.name|slice:":1" }}</div>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold mb-0">{{ emp.name }}</div>
+                                <small class="text-muted"><i class="bi bi-telephone"></i> {{ emp.phone_number|default:"No Phone" }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="font-monospace fw-semibold">{{ emp.iqama_number }}</div>
+                        <small class="text-muted font-monospace">{{ emp.passport_number }}</small>
+                    </td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">{{ emp.client_company.name|default:emp.company_name }}</span></td>
+                    <td>{{ emp.position }}</td>
+                    <td class="fw-bold text-success">{{ emp.basic_salary }} SAR</td>
+                    <td class="fw-bold text-primary">{{ emp.receiving_amount }} SAR</td>
+                    <td>
+                        {% if emp.iqama_expiry <= thirty_days %}
+                            <span class="badge bg-danger px-2 py-1"><i class="bi bi-clock-history"></i> {{ emp.iqama_expiry }}</span>
+                        {% else %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2 py-1">{{ emp.iqama_expiry }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="/employees/profile/{{ emp.id }}/" class="btn btn-sm btn-outline-primary fw-semibold"><i class="bi bi-pencil-square"></i> View / Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted lang-text" data-en="No employees found in database." data-ar="لا يوجد موظفين في قاعدة البيانات.">No employees found in database.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

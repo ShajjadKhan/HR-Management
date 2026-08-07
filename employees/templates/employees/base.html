@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>HR Flow Pro - SaaS Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --body-bg: #f8fafc; --card-bg: #ffffff; --text-color: #0f172a;
+            --border-color: #e2e8f0; --nav-bg: #0f172a; --table-header-bg: #f1f5f9;
+            --table-row-hover: #f8fafc; --muted-text: #64748b;
+        }
+        [data-theme="dark"] {
+            --body-bg: #0b0f19; --card-bg: #131c2e; --text-color: #f8fafc;
+            --border-color: #1e293b; --nav-bg: #070a12; --table-header-bg: #1e293b;
+            --table-row-hover: #1a2438; --muted-text: #94a3b8;
+            color-scheme: dark;
+        }
+        body { background-color: var(--body-bg); color: var(--text-color); font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.2s ease; }
+        .navbar { background-color: var(--nav-bg) !important; border-bottom: 1px solid var(--border-color); }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); color: var(--text-color); }
+        .form-control, .form-select { background-color: var(--body-bg); color: var(--text-color); border-color: var(--border-color); }
+        .form-control:focus, .form-select:focus { background-color: var(--body-bg); color: var(--text-color); border-color: #3b82f6; box-shadow: none; }
+        .form-control::placeholder { color: var(--muted-text); }
+        .text-muted { color: var(--muted-text) !important; }
+        
+        /* Dark Mode Disabled Fields & Date Picker Overrides */
+        [data-theme="dark"] .form-control:disabled, 
+        [data-theme="dark"] .form-select:disabled,
+        [data-theme="dark"] fieldset[disabled] .form-control,
+        [data-theme="dark"] fieldset[disabled] .form-select {
+            background-color: #0b0f19 !important;
+            color: #cbd5e1 !important;
+            border-color: #1e293b !important;
+            opacity: 0.9;
+        }
+        [data-theme="dark"] input[type="date"] {
+            color-scheme: dark !important;
+            color: #ffffff !important;
+        }
+        [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(2) !important;
+            opacity: 1 !important;
+            cursor: pointer !important;
+        }
+
+        .table { color: var(--text-color) !important; --bs-table-bg: transparent; --bs-table-color: var(--text-color); border-color: var(--border-color); }
+        .table th { background-color: var(--table-header-bg) !important; color: var(--text-color) !important; border-color: var(--border-color) !important; }
+        .table td { border-color: var(--border-color) !important; color: var(--text-color) !important; }
+        .table-hover tbody tr:hover { background-color: var(--table-row-hover) !important; color: var(--text-color) !important; }
+        .list-group-item { background-color: var(--card-bg); color: var(--text-color); border-color: var(--border-color); }
+        .list-group-item:hover { background-color: var(--table-row-hover); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top py-2 shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold fs-4 text-primary d-flex align-items-center gap-2" href="/employees/dashboard/">
+                <i class="bi bi-person-badge-fill fs-3"></i> HR Flow Pro
+            </a>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <a href="/employees/dashboard/" class="btn btn-outline-light btn-sm px-3 lang-text" data-en="Dashboard" data-ar="لوحة القيادة"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a href="/employees/list/" class="btn btn-outline-light btn-sm px-3 lang-text" data-en="All Employees" data-ar="جميع الموظفين"><i class="bi bi-people-fill"></i> All Employees</a>
+                <a href="/employees/companies/" class="btn btn-outline-light btn-sm px-3 lang-text" data-en="Companies" data-ar="الشركات"><i class="bi bi-building"></i> Companies</a>
+                <a href="/employees/add/" class="btn btn-primary btn-sm px-3 fw-semibold lang-text" data-en="+ Add Employee" data-ar="+ إضافة موظف"><i class="bi bi-person-plus-fill"></i> + Add Employee</a>
+                <button onclick="toggleLang()" class="btn btn-warning btn-sm fw-bold ms-2" id="langBtn">عربي</button>
+                <button onclick="toggleTheme()" class="btn btn-secondary btn-sm" id="themeBtn">🌙 Dark</button>
+                <a href="/employees/logout/" class="btn btn-outline-danger btn-sm ms-2 lang-text" data-en="Logout" data-ar="خروج"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid px-4 py-4">
+        {% block content %}{% endblock %}
+    </div>
+    <script>
+        function toggleTheme() {
+            let html = document.getElementById('html-root');
+            let newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('themeBtn').innerText = newTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+        }
+        function toggleLang() {
+            let html = document.getElementById('html-root');
+            let newLang = html.getAttribute('lang') === 'en' ? 'ar' : 'en';
+            html.setAttribute('lang', newLang);
+            html.setAttribute('dir', newLang === 'ar' ? 'rtl' : 'ltr');
+            localStorage.setItem('lang', newLang);
+            document.getElementById('langBtn').innerText = newLang === 'ar' ? 'English' : 'عربي';
+            document.querySelectorAll('.lang-text').forEach(el => { el.innerText = el.getAttribute('data-' + newLang); });
+        }
+        window.onload = function() {
+            if (localStorage.getItem('theme') === 'dark') toggleTheme();
+            if (localStorage.getItem('lang') === 'ar') toggleLang();
+        }
+    </script>
+</body>
+</html>
