@@ -1,0 +1,38 @@
+from django.db import models
+from django.contrib.auth.models import User
+
+class Company(models.Model):
+    name = models.CharField(max_length=100)
+    admin_account = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    def __str__(self): return self.name
+
+class Employee(models.Model):
+    VISA_CHOICES = [
+        ('active', 'Active / Valid Iqama'),
+        ('expired', 'Expired Iqama'),
+        ('transfer', 'In Transfer Process'),
+        ('exit_reentry', 'Exit / Re-entry Visa'),
+    ]
+    name = models.CharField(max_length=100)
+    nationality = models.CharField(max_length=50)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    photo = models.ImageField(upload_to='photos/', null=True, blank=True)
+    iqama_number = models.CharField(max_length=50, unique=True)
+    passport_number = models.CharField(max_length=50, unique=True)
+    iqama_expiry = models.DateField()
+    starting_date = models.DateField()
+    transfer_dates = models.DateField(blank=True, null=True, verbose_name="Join Date")
+    kafeel_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Sponsor / Kafeel Name")
+    visa_status = models.CharField(max_length=20, choices=VISA_CHOICES, default='active')
+    company_name = models.CharField(max_length=100)
+    client_company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
+    position = models.CharField(max_length=100)
+    basic_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    receiving_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    salary_paid = models.BooleanField(default=False)
+    payment_history = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self): return self.name

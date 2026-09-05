@@ -1,0 +1,20 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<h2>Iqama Expiry Alerts</h2>
+<table class="table table-bordered">
+    <thead><tr><th>Employee</th><th>Iqama Number</th><th>Expiry Date</th><th>Days Left</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for item in expiry_list %}
+        <tr class="table-{{ item.color }}">
+            <td>{{ item.employee.name }}</td>
+            <td>{{ item.employee.iqama_number }}</td>
+            <td>{{ item.employee.iqama_expiry }}</td>
+            <td>{{ item.days_left }}</td>
+            <td>{% if item.days_left < 0 %}Expired{% elif item.days_left <= 21 %}⚠️ Soon{% else %}✅ Valid{% endif %}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No employees with Iqama.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<h2>👥 Employees</h2>
+<table class="table table-striped">
+    <thead><tr><th>Name</th><th>Position</th><th>Company</th><th>Salary</th><th>Iqama Expiry</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for emp in employees %}
+        <tr>
+            <td><a href="{% url 'employee_detail' emp.id %}">{{ emp.name }}</a></td>
+            <td>{{ emp.position }}</td>
+            <td>{{ emp.company_name }}</td>
+            <td>{{ emp.basic_salary }}</td>
+            <td>{% if emp.iqama_expiry %}{{ emp.iqama_expiry }}{% else %}-{% endif %}</td>
+            <td>
+                <a href="{% url 'employee_detail' emp.id %}" class="btn btn-sm btn-info">View</a>
+                <a href="{% url 'employee_edit' emp.id %}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{% url 'salary_pay' emp.id %}" class="btn btn-sm btn-success">Pay</a>
+                <a href="{% url 'employee_delete' emp.id %}" class="btn btn-sm btn-danger">Del</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">No employees.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

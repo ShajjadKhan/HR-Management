@@ -1,138 +1,16 @@
 {% extends 'employees/base.html' %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold m-0 lang-text" data-en="HR Analytics & Control Center" data-ar="مركز تحليلات وإدارة الموارد البشرية">HR Analytics & Control Center</h3>
+<div class="row">
+    <div class="col-md-12"><h2 class="mb-4">🏢 HR Dashboard</h2></div>
 </div>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card p-3 border-start border-primary border-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase lang-text" data-en="Total Employees" data-ar="إجمالي الموظفين">Total Employees</span>
-                    <h2 class="fw-bold my-1 text-primary">{{ total_employees }}</h2>
-                </div>
-                <div class="bg-primary bg-opacity-10 p-3 rounded-3 text-primary"><i class="bi bi-people fs-2"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3 border-start border-success border-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase lang-text" data-en="Total Revenue" data-ar="إجمالي الإيرادات">Total Revenue</span>
-                    <h2 class="fw-bold my-1 text-success">{{ total_revenue }} <small class="fs-6 text-muted">SAR</small></h2>
-                </div>
-                <div class="bg-success bg-opacity-10 p-3 rounded-3 text-success"><i class="bi bi-cash-stack fs-2"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3 border-start border-warning border-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase lang-text" data-en="Net Profit Margin" data-ar="صافي الأرباح">Net Profit Margin</span>
-                    <h2 class="fw-bold my-1 text-warning">{{ net_margin }} <small class="fs-6 text-muted">SAR</small></h2>
-                </div>
-                <div class="bg-warning bg-opacity-10 p-3 rounded-3 text-warning"><i class="bi bi-graph-up-arrow fs-2"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3 border-start border-danger border-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase lang-text" data-en="Iqama Expiring (30 Days)" data-ar="انتهاء الإقامة (30 يوم)">Iqama Expiring (30 Days)</span>
-                    <h2 class="fw-bold my-1 text-danger">{{ expiring_count }}</h2>
-                </div>
-                <div class="bg-danger bg-opacity-10 p-3 rounded-3 text-danger"><i class="bi bi-exclamation-triangle fs-2"></i></div>
-            </div>
-        </div>
-    </div>
+<div class="row mb-4">
+    <div class="col-md-3"><div class="card p-3"><h5>👥 Employees</h5><h2>{{ employee_count }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><h5>🏠 Properties</h5><h2>{{ property_count }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><h5>📋 Pending Leave</h5><h2>{{ pending_leave_count }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><h5>⚠️ Iqama Expiring Soon</h5><h2>{{ expiring_soon }}</h2></div></div>
 </div>
-
-<div class="card p-4 mb-4 shadow-sm">
-    <h5 class="fw-bold mb-1 lang-text" data-en="Smart Employee Search" data-ar="البحث الذكي عن الموظفين"><i class="bi bi-search text-primary me-2"></i>Smart Employee Search</h5>
-    <p class="text-muted small mb-3 lang-text" data-en="Type 2+ letters of Name or Iqama Number for instant jump" data-ar="اكتب حرفين أو أكثر من الاسم أو رقم الإقامة للوصول السريع">Type 2+ letters of Name or Iqama Number for instant jump</p>
-
-    <div class="position-relative">
-        <input type="text" id="searchInput" class="form-control form-control-lg w-100 fs-6 py-3 px-3 shadow-sm" placeholder="🔍 Search by Employee Name, Iqama Number, or Passport... / ابحث باسم الموظف أو رقم الإقامة..." onkeyup="search()">
-    </div>
-    <div id="results" class="list-group mt-2"></div>
+<div class="row">
+    <div class="col-md-6"><div class="card p-3"><h5>Recent Employees</h5><ul class="list-group">{% for emp in recent_employees %}<li class="list-group-item"><a href="{% url 'employee_detail' emp.id %}">{{ emp.name }}</a> - {{ emp.position }}</li>{% empty %}<li class="list-group-item">No employees.</li>{% endfor %}</ul></div></div>
+    <div class="col-md-6"><div class="card p-3"><h5>Recent Properties</h5><ul class="list-group">{% for prop in recent_properties %}<li class="list-group-item">{{ prop.property_name }} - SAR {{ prop.charge_amount }}</li>{% empty %}<li class="list-group-item">No properties.</li>{% endfor %}</ul></div></div>
 </div>
-<div class="card p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold m-0 lang-text" data-en="Live Employee Roster" data-ar="قائمة الموظفين الحالية"><i class="bi bi-table text-primary me-2"></i>Live Employee Roster</h5>
-        <a href="/employees/list/" class="btn btn-outline-primary btn-sm fw-semibold lang-text" data-en="View Full Directory →" data-ar="عرض الدليل الكامل ←">View Full Directory →</a>
-    </div>
-
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead>
-                <tr>
-                    <th class="lang-text" data-en="Worker" data-ar="الموظف">Worker</th>
-                    <th class="lang-text" data-en="Iqama Number" data-ar="رقم الإقامة">Iqama Number</th>
-                    <th class="lang-text" data-en="Client Placement" data-ar="الشركة التابع لها">Client Placement</th>
-                    <th class="lang-text" data-en="Position" data-ar="المهنة">Position</th>
-                    <th class="lang-text" data-en="Basic Salary" data-ar="الراتب الأساسي">Basic Salary</th>
-                    <th class="lang-text" data-en="Iqama Expiry" data-ar="تاريخ الإقامة">Iqama Expiry</th>
-                    <th class="text-end lang-text" data-en="Action" data-ar="الإجراء">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for emp in employees %}
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            {% if emp.photo %}
-                                <img src="{{ emp.photo.url }}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;">
-                            {% else %}
-                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">{{ emp.name|slice:":1" }}</div>
-                            {% endif %}
-                            <div>
-                                <div class="fw-bold mb-0">{{ emp.name }}</div>
-                                <small class="text-muted">{{ emp.nationality }}</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span class="font-monospace fw-semibold">{{ emp.iqama_number }}</span></td>
-                    <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-2 py-1">{{ emp.client_company.name|default:emp.company_name }}</span></td>
-                    <td>{{ emp.position }}</td>
-                    <td class="fw-bold text-success">{{ emp.basic_salary }} SAR</td>
-                    <td>
-                        {% if emp.iqama_expiry <= thirty_days %}
-                            <span class="badge bg-danger px-2 py-1"><i class="bi bi-clock-history"></i> {{ emp.iqama_expiry }}</span>
-                        {% else %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2 py-1">{{ emp.iqama_expiry }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end">
-                        <a href="/employees/profile/{{ emp.id }}/" class="btn btn-sm btn-outline-primary fw-semibold"><i class="bi bi-pencil-square"></i> View / Edit</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center py-4 text-muted lang-text" data-en="No employee records found. Click '+ Add Employee' to create one." data-ar="لا يوجد موظفين حالياً. اضغط على '+ إضافة موظف'">No employee records found. Click '+ Add Employee' to create one.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-    function search() {
-        let query = document.getElementById('searchInput').value;
-        let resultsDiv = document.getElementById('results');
-        if (query.length < 2) { resultsDiv.innerHTML = ''; return; }
-        fetch(`/employees/search/?q=${query}`)
-        .then(response => response.json())
-        .then(data => {
-            resultsDiv.innerHTML = '';
-            data.forEach(emp => {
-                resultsDiv.innerHTML += `<a href="/employees/profile/${emp.id}/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><div><strong>${emp.name}</strong> - <small class="text-muted">${emp.position}</small></div><span class="badge bg-primary rounded-pill">Iqama: ${emp.iqama_number}</span></a>`;
-            });
-        });
-    }
-</script>
 {% endblock %}

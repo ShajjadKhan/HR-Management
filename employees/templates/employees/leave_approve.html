@@ -1,0 +1,13 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<h2>Approve Leave</h2>
+<p><strong>Employee:</strong> {{ leave.employee.name }}</p>
+<p><strong>Type:</strong> {{ leave.get_leave_type_display }}</p>
+<p><strong>From:</strong> {{ leave.start_date }} to {{ leave.end_date }}</p>
+<p><strong>Reason:</strong> {{ leave.reason }}</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+</form>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<div class="card p-4">
+    <h3>Confirm Salary Payment</h3>
+    <p><strong>Employee:</strong> {{ employee.name }}</p>
+    <p><strong>Amount:</strong> SAR {{ employee.basic_salary }}</p>
+    <p>This will mark the salary as paid and log the date.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">✅ Confirm Payment</button>
+        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

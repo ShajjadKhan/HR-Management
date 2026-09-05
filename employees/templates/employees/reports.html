@@ -1,0 +1,9 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<h2>Generate Reports</h2>
+<form method="post">
+    {% csrf_token %}
+    <p>Download full employee list as Excel file.</p>
+    <button type="submit" class="btn btn-primary">Download Excel Report</button>
+</form>
+{% endblock %}

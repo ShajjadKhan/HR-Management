@@ -1,37 +1,39 @@
 from django import forms
-from .models import Employee
+from .models import LeaveRequest, Employee, Property, Holiday, LeavePolicy
 
-class EmployeeForm(forms.ModelForm):
-    iqama_expiry = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}, format='%Y-%m-%d'),
-        label='Iqama Expiry Date',
-        required=True
-    )
-    starting_date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}, format='%Y-%m-%d'),
-        label='Starting Date',
-        required=True
-    )
-    transfer_dates = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}, format='%Y-%m-%d'),
-        label='Join Date',
-        required=False
-    )
-
+class LeaveRequestForm(forms.ModelForm):
     class Meta:
-        model = Employee
-        exclude = ['payment_history']
-        error_messages = {
-            'iqama_number': {
-                'unique': "DUPLICATE ENTRY: An employee with this Iqama Number already exists in your database!",
-            },
-            'passport_number': {
-                'unique': "DUPLICATE ENTRY: An employee with this Passport Number already exists in your database!",
-            }
+        model = LeaveRequest
+        fields = ['leave_type', 'start_date', 'end_date', 'is_half_day', 'reason', 'attachment']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name in ['iqama_expiry', 'starting_date', 'transfer_dates']:
-            if field_name in self.fields:
-                self.fields[field_name].widget.format = '%Y-%m-%d'
+class EmployeeForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        exclude = ['user', 'payment_history', 'salary_paid']
+        widgets = {
+            'joining_date': forms.DateInput(attrs={'type': 'date'}),
+            'iqama_expiry': forms.DateInput(attrs={'type': 'date'}),
+            'transfer_dates': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+class PropertyForm(forms.ModelForm):
+    class Meta:
+        model = Property
+        fields = ['property_name', 'charge_amount']  # employee_salary বাদ
+
+class HolidayForm(forms.ModelForm):
+    class Meta:
+        model = Holiday
+        fields = ['holiday_date', 'name']
+        widgets = {
+            'holiday_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+class LeavePolicyForm(forms.ModelForm):
+    class Meta:
+        model = LeavePolicy
+        fields = ['yearly_leave', 'carry_forward_limit', 'sick_leave_per_year', 'emergency_leave_per_year', 'allow_negative', 'negative_limit']

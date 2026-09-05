@@ -1,0 +1,22 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<h2>🏠 Properties</h2>
+<a href="{% url 'property_add' %}" class="btn btn-primary mb-3">+ Add Property</a>
+<table class="table table-striped">
+    <thead><tr><th>Name</th><th>Charge (SAR)</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for prop in properties %}
+        <tr>
+            <td>{{ prop.property_name }}</td>
+            <td>{{ prop.charge_amount }}</td>
+            <td>
+                <a href="{% url 'property_edit' prop.id %}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{% url 'property_delete' prop.id %}" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="3">No properties. Click "Add Property" to create one.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

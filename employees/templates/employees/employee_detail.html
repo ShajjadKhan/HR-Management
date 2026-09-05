@@ -1,0 +1,37 @@
+{% extends 'employees/base.html' %}
+{% block content %}
+<div class="card p-4">
+    <h2>{{ employee.name }}</h2>
+    <p><strong>Position:</strong> {{ employee.position }}</p>
+    <p><strong>Company:</strong> {{ employee.company_name }}</p>
+    <p><strong>Basic Salary:</strong> SAR {{ employee.basic_salary }}</p>
+    <p><strong>Receiving (Property):</strong> SAR {{ employee.receiving_amount }}</p>
+    <p><strong>Joining Date:</strong> {{ employee.joining_date }}</p>
+    <p><strong>Iqama Expiry:</strong> {{ employee.iqama_expiry }}</p>
+    <p><strong>Status:</strong> {% if employee.salary_paid %}✅ Paid{% else %}⏳ Pending{% endif %}</p>
+    <hr>
+    <h5>Leave Balance (Current Year)</h5>
+    {% if current_balance %}
+        <ul>
+            <li>Accrued: {{ current_balance.accrued_balance }}</li>
+            <li>Carried Forward: {{ current_balance.carried_forward_balance }}</li>
+            <li>Used: {{ current_balance.used_balance }}</li>
+            <li>Negative: {{ current_balance.negative_balance }}</li>
+        </ul>
+    {% else %}
+        <p>No balance record yet.</p>
+    {% endif %}
+    <hr>
+    <h5>Assigned Properties</h5>
+    {% for ap in assigned_props %}
+        <span class="badge bg-primary">{{ ap.property.property_name }}</span>
+    {% empty %}
+        <p>Not assigned to any property.</p>
+    {% endfor %}
+    <hr>
+    <a href="{% url 'employee_edit' employee.id %}" class="btn btn-primary">Edit</a>
+    <a href="{% url 'salary_pay' employee.id %}" class="btn btn-success">Mark Salary Paid</a>
+    <a href="{% url 'employee_delete' employee.id %}" class="btn btn-danger">Delete</a>
+    <a href="{% url 'employees_list' %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

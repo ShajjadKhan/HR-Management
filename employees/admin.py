@@ -1,8 +1,12 @@
 from django.contrib import admin
-from .models import Employee
+from .models import Company, Employee, Property, EmployeeProperty, LeavePolicy, LeaveBalance, LeaveRequest, Holiday, Notification
 
-@admin.register(Employee)
-class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'iqama_number', 'company_name', 'basic_salary', 'iqama_expiry')
-    search_fields = ('name', 'iqama_number', 'passport_number')
-    list_filter = ('company_name', 'salary_paid')
+admin.site.register(Company)
+admin.site.register(Employee)
+admin.site.register(Property)
+admin.site.register(EmployeeProperty)
+admin.site.register(LeavePolicy)
+admin.site.register(LeaveBalance)
+admin.site.register(LeaveRequest)
+admin.site.register(Holiday)
+admin.site.register(Notification)
