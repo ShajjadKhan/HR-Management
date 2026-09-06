@@ -1,5 +1,8 @@
 hr_env/
-db.sqlite3
+db.sqlite3*
+*.log
+*.bak*
 __pycache__/
 *.pyc
 .DS_Store
+
