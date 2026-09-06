@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HR SaaS - Manpower & Contracting{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -45,7 +45,7 @@
         .mobile-header {
             background-color: var(--sidebar-bg);
             color: white;
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 0.85rem;
             position: sticky;
             top: 0;
             z-index: 1030;
@@ -89,8 +89,12 @@
 
         @media (max-width: 767.98px) {
             .sidebar {
-                width: 280px !important;
-                min-height: 100% !important;
+                width: 290px !important;
+                max-width: 85vw !important;
+                height: 100% !important;
+                max-height: 100vh !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
             }
             .main-content {
                 padding: 1rem 0.75rem !important;
@@ -236,17 +240,58 @@
             color: #ffffff;
         }
 
-        /* Touch friendly controls for mobile */
+        /* Touch friendly controls & responsive ergonomics for mobile */
         @media (max-width: 767.98px) {
+            .sidebar a.nav-link {
+                min-height: 44px;
+                font-size: 0.95rem;
+                padding: 0.70rem 0.90rem;
+            }
             .btn {
                 min-height: 42px;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
             }
+            .btn-sm {
+                min-height: 36px;
+                font-size: 0.84rem;
+                padding: 0.35rem 0.65rem;
+            }
             .form-control, .form-select {
                 min-height: 44px;
-                font-size: 16px; /* Prevents auto-zoom on iOS */
+                font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+            }
+            .input-group-sm .form-control, .input-group-sm .form-select {
+                min-height: 38px;
+                font-size: 14px !important;
+            }
+            .top-nav-tabs-bar {
+                padding: 0.4rem 0.6rem !important;
+                margin-bottom: 0.85rem !important;
+            }
+            .top-nav-tabs-bar > div {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Hide scrollbar for clean app-bar look */
+            }
+            .top-nav-tabs-bar > div::-webkit-scrollbar {
+                display: none;
+            }
+            .top-nav-tabs-bar a.btn {
+                min-height: 34px !important;
+                font-size: 0.80rem !important;
+                padding: 0.35rem 0.65rem !important;
+                flex-shrink: 0;
+            }
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+                border-radius: 8px;
+            }
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            .card {
+                border-radius: 12px;
             }
         }
 
@@ -261,33 +306,33 @@
 </head>
 <body>
 
-    <!-- Mobile Header (Visible on phones & tablets < 768px) -->
+    <!-- Mobile Header (Optimized for all phone screens >= 320px) -->
     <div class="mobile-header d-flex justify-content-between align-items-center d-md-none">
-        <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-dark p-1 border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarNav" aria-controls="sidebarNav">
+        <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1 1 auto;">
+            <button class="btn btn-dark p-0 d-flex align-items-center justify-content-center flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarNav" aria-controls="sidebarNav" aria-label="Toggle navigation" style="width: 40px; height: 40px; border-radius: 8px; background: #1e293b; border: 1px solid #334155;">
                 <i class="bi bi-list fs-2 text-white"></i>
             </button>
-            <div class="fw-bold text-truncate" style="max-width: 180px;">
+            <div class="fw-bold text-truncate" style="font-size: 0.92rem;">
                 {% if is_master_admin and not is_supreme_mode %}
                     <span class="text-warning"><i class="bi bi-shield-shaded me-1"></i>Master Admin</span>
                 {% elif is_master_admin and is_supreme_mode %}
-                    <span class="text-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supreme: {{ current_company.name }}</span>
+                    <span class="text-danger text-truncate d-inline-block"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supreme: {{ current_company.name }}</span>
                 {% elif current_company %}
-                    <span><i class="bi bi-building me-1 text-primary"></i>{{ current_company.name }}</span>
+                    <span class="text-truncate d-inline-block"><i class="bi bi-building me-1 text-primary"></i>{{ current_company.name }}</span>
                 {% else %}
                     <span>HR SaaS</span>
                 {% endif %}
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
             {% if not is_master_admin or is_supreme_mode %}
-            <a href="{% url 'salary_disbursements' %}" class="btn btn-sm btn-primary py-1 px-2 text-white fw-bold d-flex align-items-center gap-1 shadow-sm" title="Salary Disbursements">
+            <a href="{% url 'salary_disbursements' %}" class="btn btn-sm btn-primary py-1 px-2 text-white fw-bold d-flex align-items-center gap-1 shadow-sm" title="Salary Disbursements" style="min-height: 36px;">
                 <i class="bi bi-cash-stack"></i>
                 <span class="small d-none d-sm-inline">Payroll</span>
             </a>
             {% endif %}
-            <button class="lang-switch-btn" onclick="toggleLanguage()">EN/عربي</button>
-            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger p-1 px-2" title="Logout">
+            <button class="lang-switch-btn" onclick="toggleLanguage()" title="Toggle English/Arabic" style="min-height: 36px; padding: 4px 8px; font-weight: 600;">EN/عربي</button>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger p-0 d-flex align-items-center justify-content-center" title="Logout" style="width: 36px; height: 36px; border-radius: 8px;">
                 <i class="bi bi-box-arrow-right fs-5"></i>
             </a>
         </div>
@@ -816,9 +861,24 @@
                     }
                 });
             }
+
+            // Auto-close mobile offcanvas when clicking modal trigger buttons
+            document.querySelectorAll('#sidebarNav [data-bs-toggle="modal"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (window.innerWidth < 768 && sidebarEl) {
+                        const offcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
+                        if (offcanvas) offcanvas.hide();
+                    }
+                });
+            });
         });
 
         function openSupremeModal(companyId, companyName) {
+            const sidebarEl = document.getElementById('sidebarNav');
+            if (window.innerWidth < 768 && sidebarEl) {
+                const offcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
+                if (offcanvas) offcanvas.hide();
+            }
             const sel = document.getElementById('supreme_target_company');
             if (sel && companyId) {
                 sel.value = companyId;
