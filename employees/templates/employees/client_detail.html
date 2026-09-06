@@ -1,0 +1,161 @@
+{% extends 'employees/base.html' %}
+{% block title %}{{ client.name }} - Client Profile{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 50px; height: 50px;">
+                <i class="bi bi-buildings fs-3"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold m-0 text-dark">{{ client.name }}</h4>
+                <div class="small text-muted">
+                    <span>Project: <strong>{{ client.project_name|default:"General Subcontract" }}</strong></span>
+                    {% if client.project_location %}
+                        <span class="ms-2"><i class="bi bi-geo-alt"></i> {{ client.project_location }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'clients_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Clients
+            </a>
+            <a href="{% url 'client_edit' client.id %}" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit Client
+            </a>
+        </div>
+    </div>
+
+    <!-- Commercial Metrics Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <div class="card bg-light border-0 p-3 rounded-3">
+                <div class="small text-muted fw-bold text-uppercase">Deployed Workers</div>
+                <div class="fs-4 fw-bold text-primary mt-1">{{ assigned_workers.count }}</div>
+                <small class="text-muted">Active at client site</small>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card bg-light border-0 p-3 rounded-3">
+                <div class="small text-muted fw-bold text-uppercase">Monthly Invoicing</div>
+                <div class="fs-4 fw-bold text-success mt-1">SAR {{ total_billing|floatformat:2 }}</div>
+                <small class="text-muted">Total receiving amount</small>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card bg-light border-0 p-3 rounded-3">
+                <div class="small text-muted fw-bold text-uppercase">Base Payroll Cost</div>
+                <div class="fs-4 fw-bold text-dark mt-1">SAR {{ total_cost|floatformat:2 }}</div>
+                <small class="text-muted">Basic salaries paid</small>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card bg-light border-0 p-3 rounded-3">
+                <div class="small text-muted fw-bold text-uppercase">Gross Profit Margin</div>
+                <div class="fs-4 fw-bold text-success mt-1">SAR {{ gross_margin|floatformat:2 }}</div>
+                <small class="text-success fw-semibold">{{ margin_pct }}% margin</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Info Bar -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border p-3 rounded-3 h-100">
+                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-lines-fill me-1"></i> Contact Information</h6>
+                <div class="small mb-1"><strong>Contact Person:</strong> {{ client.contact_person|default:"Not specified" }}</div>
+                <div class="small mb-1"><strong>Phone:</strong> {{ client.phone|default:"Not specified" }}</div>
+                <div class="small mb-1"><strong>Email:</strong> {{ client.email|default:"Not specified" }}</div>
+                <div class="small"><strong>CR / Tax ID:</strong> {{ client.cr_number|default:"Not specified" }}</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border p-3 rounded-3 h-100">
+                <h6 class="fw-bold text-success mb-2"><i class="bi bi-file-earmark-check me-1"></i> Agreement Details</h6>
+                <div class="small mb-1"><strong>Contract Ref:</strong> {{ client.contract_number|default:"N/A" }}</div>
+                <div class="small mb-1"><strong>Contract Period:</strong> {{ client.contract_start|default:"Open" }} to {{ client.contract_end|default:"Ongoing" }}</div>
+                <div class="small mb-1"><strong>Status:</strong> <span class="badge bg-success bg-opacity-10 text-success">{{ client.status|title }}</span></div>
+                {% if client.notes %}
+                    <div class="small text-muted mt-2"><strong>Notes:</strong> {{ client.notes }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Deployed Workers List -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold m-0 text-dark">
+            <i class="bi bi-people-fill text-primary me-2"></i> Workers Deployed at {{ client.name }} ({{ assigned_workers.count }})
+        </h5>
+        <a href="{% url 'employees_list' %}?deployment=available" class="btn btn-outline-success btn-sm fw-semibold">
+            <i class="bi bi-person-plus me-1"></i> Deploy Worker from Bench
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Worker</th>
+                    <th>Trade / Position</th>
+                    <th>Iqama Number</th>
+                    <th>Basic Salary (Cost)</th>
+                    <th>Billed Rate (Revenue)</th>
+                    <th>Monthly Margin</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for worker in assigned_workers %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if worker.photo %}
+                                <img src="{{ worker.photo.url }}" class="rounded-circle border" style="width: 38px; height: 38px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
+                                    {{ worker.name|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <a href="{% url 'employee_detail' worker.id %}" class="fw-bold text-dark text-decoration-none d-block">
+                                    {{ worker.name }}
+                                </a>
+                                <small class="text-muted">{{ worker.nationality }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-dark">{{ worker.position }}</span></td>
+                    <td class="font-monospace small">{{ worker.iqama_number }}</td>
+                    <td class="text-danger fw-semibold">SAR {{ worker.basic_salary }}</td>
+                    <td class="text-success fw-bold">SAR {{ worker.receiving_amount }}</td>
+                    <td>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                            +SAR {{ worker.profit_margin|floatformat:2 }} ({{ worker.profit_margin_pct }}%)
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'employee_detail' worker.id %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-person-badge"></i> Profile
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted bg-light rounded-3">
+                        <i class="bi bi-people fs-2 d-block mb-1 text-secondary"></i>
+                        No workers currently deployed to this client.
+                        <a href="{% url 'clients_list' %}?tab=bench" class="btn btn-sm btn-primary mt-2">
+                            Deploy from Bench Pool
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

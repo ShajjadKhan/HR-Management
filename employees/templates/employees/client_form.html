@@ -1,0 +1,113 @@
+{% extends 'employees/base.html' %}
+{% block title %}{% if client %}Edit Client - {{ client.name }}{% else %}Add Client Company{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 760px;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">
+                <i class="bi bi-briefcase-fill text-primary me-2"></i>{% if client %}Edit Client Company: {{ client.name }}{% else %}Register New Client Company{% endif %}
+            </h4>
+            <small class="text-muted">Contracting for: <strong>{{ company.name }}</strong></small>
+        </div>
+        <a href="{% url 'clients_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Clients
+        </a>
+    </div>
+
+    <hr class="my-2 opacity-25">
+
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+
+        <!-- Client Identity -->
+        <div class="p-3 bg-light rounded-3 border mb-4">
+            <h6 class="fw-bold text-primary mb-3">
+                <i class="bi bi-building me-1"></i> Client Company Information
+            </h6>
+
+            <div class="mb-3">
+                <label for="id_name" class="form-label small fw-bold text-muted">Client Company Name *</label>
+                {{ form.name }}
+                <small class="text-muted" style="font-size: 11px;">e.g. Saudi Aramco, Red Sea Global, Nesma & Partners, Qiddiya Investment Co.</small>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="id_contact_person" class="form-label small fw-bold text-muted">Key Contact Person / Manager</label>
+                    {{ form.contact_person }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_phone" class="form-label small fw-bold text-muted">Contact Phone / Mobile</label>
+                    {{ form.phone }}
+                </div>
+            </div>
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-6">
+                    <label for="id_email" class="form-label small fw-bold text-muted">Contact Email</label>
+                    {{ form.email }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_cr_number" class="form-label small fw-bold text-muted">CR / Tax ID (Optional)</label>
+                    {{ form.cr_number }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Project & Contract Details -->
+        <div class="p-3 bg-light rounded-3 border mb-4">
+            <h6 class="fw-bold text-success mb-3">
+                <i class="bi bi-file-earmark-text me-1"></i> Project Site & Agreement Details
+            </h6>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-7">
+                    <label for="id_project_name" class="form-label small fw-bold text-muted">Project / Site Name</label>
+                    {{ form.project_name }}
+                    <small class="text-muted" style="font-size: 11px;">e.g. Riyadh Metro Line 3, NEOM Spine Project, Ras Tanura Refinery</small>
+                </div>
+                <div class="col-md-5">
+                    <label for="id_project_location" class="form-label small fw-bold text-muted">Project Location / City</label>
+                    {{ form.project_location }}
+                    <small class="text-muted" style="font-size: 11px;">e.g. Riyadh, Tabuk / NEOM, Jubail, Jeddah</small>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="id_contract_number" class="form-label small fw-bold text-muted">Contract Ref #</label>
+                    {{ form.contract_number }}
+                </div>
+                <div class="col-md-4">
+                    <label for="id_contract_start" class="form-label small fw-bold text-muted">Contract Start</label>
+                    {{ form.contract_start }}
+                </div>
+                <div class="col-md-4">
+                    <label for="id_contract_end" class="form-label small fw-bold text-muted">Contract End</label>
+                    {{ form.contract_end }}
+                </div>
+            </div>
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-4">
+                    <label for="id_status" class="form-label small fw-bold text-muted">Contract Status</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-md-8">
+                    <label for="id_notes" class="form-label small fw-bold text-muted">Commercial Terms & Site Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'clients_list' %}" class="btn btn-outline-secondary w-50 py-2 fw-semibold">Cancel</a>
+            <button type="submit" class="btn btn-primary w-50 fw-bold py-2 shadow-sm">
+                <i class="bi bi-save me-1"></i> Save Client Company
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'employees/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="mb-3">
+        <a href="{% url 'employees_list' %}" class="btn btn-sm btn-outline-secondary fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Workers Directory
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-7">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white p-4 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-warning text-dark rounded-3 p-3 fs-3 shadow-sm">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">Two-Matched Fast Worker Onboarding</h4>
+                            <p class="text-muted small mb-0">Dual-Key verification (Iqama + Phone) to safely hire verified candidates from the job network.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <!-- Security Rule Explanation Banner -->
+                    <div class="alert alert-warning border-0 rounded-3 shadow-sm d-flex align-items-start gap-3 mb-4" style="background-color: #fffbeb;">
+                        <i class="bi bi-key-fill fs-4 text-warning flex-shrink-0"></i>
+                        <div class="small text-dark" style="line-height: 1.5;">
+                            <strong>Dual-Key Verification Guard:</strong>
+                            To prevent unauthorized recruitment or identity fraud, you must provide <strong>BOTH the Iqama Number AND Phone Number</strong> matching the candidate's verified profile.
+                            Upon verification, the system will onboard him directly into <strong>{{ company.name }}</strong>'s employee roster.
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small mb-4">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Dual Match Verification Keys -->
+                        <div class="p-3 bg-light rounded-3 border mb-4">
+                            <h6 class="fw-bold text-dark mb-2">
+                                <i class="bi bi-person-bounding-box text-primary me-1"></i> Dual-Key Candidate Verification
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">Candidate Iqama Number * (رقم الإقامة)</label>
+                                    {{ form.iqama_number }}
+                                    {% if form.iqama_number.errors %}<div class="text-danger small">{{ form.iqama_number.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-dark">Candidate Phone Number * (رقم الجوال)</label>
+                                    {{ form.phone_number }}
+                                    {% if form.phone_number.errors %}<div class="text-danger small">{{ form.phone_number.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contract & Compensation Details -->
+                        <h6 class="fw-bold text-dark mb-3">Employment & Financial Terms</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Worker Position / Designation * (المهنة)</label>
+                                {{ form.position }}
+                                {% if form.position.errors %}<div class="text-danger small">{{ form.position.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Joining Date * (تاريخ الالتحاق)</label>
+                                {{ form.joining_date }}
+                                {% if form.joining_date.errors %}<div class="text-danger small">{{ form.joining_date.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Basic Monthly Salary (SAR) * (الراتب الأساسي)</label>
+                                {{ form.basic_salary }}
+                                {% if form.basic_salary.errors %}<div class="text-danger small">{{ form.basic_salary.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Receiving Amount from Client (SAR) (سعر التوريد)</label>
+                                {{ form.receiving_amount }}
+                                <div class="text-muted" style="font-size: 0.72rem;">Leave blank to auto-set with standard margin.</div>
+                                {% if form.receiving_amount.errors %}<div class="text-danger small">{{ form.receiving_amount.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-dark">Assign to Client / Project (اختياري - تعيين للعميل)</label>
+                            {{ form.assigned_client }}
+                            <div class="text-muted" style="font-size: 0.72rem;">If unassigned, the worker will be placed on your company's Bench / Available roster.</div>
+                            {% if form.assigned_client.errors %}<div class="text-danger small">{{ form.assigned_client.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 border mb-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <div class="text-muted small" style="font-size: 0.76rem; line-height: 1.4;">
+                                    When submitted, the candidate profile will be verified against the network. Once matched, the worker is converted to an active <code>Employee</code> under <strong>{{ company.name }}</strong>, and their candidate status is locked to <strong>Hired</strong>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                            <a href="{% url 'employees_list' %}" class="btn btn-light border px-4 fw-semibold">Cancel</a>
+                            <button type="submit" class="btn btn-warning text-dark px-4 fw-bold shadow-sm d-flex align-items-center gap-2">
+                                <i class="bi bi-check2-circle fs-5"></i>
+                                <span>Verify Two Matches & Onboard</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

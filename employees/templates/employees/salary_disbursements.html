@@ -1,0 +1,544 @@
+{% extends 'employees/base.html' %}
+{% load static %}
+
+{% block title %}Salary Disbursements ({{ month_name }} {{ selected_year }}) - {{ company.name }}{% endblock %}
+
+{% block content %}
+<!-- Header Banner -->
+<div class="card p-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: white;">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary text-white rounded-3 p-2 fs-2 d-flex align-items-center justify-content-center shadow" style="width: 52px; height: 52px;">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="fw-bold mb-0 lang-text" data-en="Salary Disbursements & Payroll Roster" data-ar="مسير صرف رواتب العمال">
+                        Salary Disbursements & Payroll Roster
+                    </h4>
+                    <span class="badge bg-primary bg-opacity-75 text-white px-2 py-1">
+                        {{ month_name }} {{ selected_year }}
+                    </span>
+                </div>
+                <small class="text-light opacity-75">
+                    Serial payroll disbursement for <strong>{{ company.name }}</strong> • Automatic advance deductions & net payable rest calculation
+                </small>
+            </div>
+        </div>
+
+        <!-- Month & Year Navigation Form -->
+        <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <input type="hidden" name="client" value="{{ client_filter }}">
+            <input type="hidden" name="q" value="{{ search_q }}">
+
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-dark border-secondary text-light"><i class="bi bi-calendar3"></i></span>
+                <select name="month" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="this.form.submit()">
+                    {% for m_num, m_txt in months_list %}
+                        <option value="{{ m_num }}" {% if selected_month == m_num %}selected{% endif %}>{{ m_txt }}</option>
+                    {% endfor %}
+                </select>
+                <select name="year" class="form-select form-select-sm bg-dark text-white border-secondary" onchange="this.form.submit()">
+                    {% for y in years_list %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Financial Summary & KPI Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Payroll Budget -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card p-3 h-100 border-start border-4 border-primary shadow-sm">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase lang-text" data-en="Gross Base Payroll" data-ar="إجمالي الرواتب الأساسية">
+                        Gross Base Payroll
+                    </div>
+                    <h3 class="fw-bold mb-0 mt-1 text-dark">SAR {{ total_payroll_budget|floatformat:2 }}</h3>
+                    <small class="text-muted mt-1 d-block">{{ total_count }} registered workers</small>
+                </div>
+                <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary fs-4">
+                    <i class="bi bi-calculator"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advances Collected / Deducted -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card p-3 h-100 border-start border-4 border-danger shadow-sm">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase lang-text" data-en="Advances Deducted" data-ar="السلف المخصومة">
+                        Advances Deducted
+                    </div>
+                    <h3 class="fw-bold mb-0 mt-1 text-danger">- SAR {{ total_advances_deducted|floatformat:2 }}</h3>
+                    <small class="text-muted mt-1 d-block">Subtracted from basic salary</small>
+                </div>
+                <div class="rounded-circle bg-danger bg-opacity-10 p-2 text-danger fs-4">
+                    <i class="bi bi-arrow-down-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Net Disbursed -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card p-3 h-100 border-start border-4 border-success shadow-sm">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase lang-text" data-en="Disbursed This Month" data-ar="الرواتب المصروفة">
+                        Disbursed This Month
+                    </div>
+                    <h3 class="fw-bold mb-0 mt-1 text-success">SAR {{ total_net_disbursed|floatformat:2 }}</h3>
+                    <small class="text-success fw-semibold mt-1 d-block">
+                        <i class="bi bi-check2-all"></i> {{ paid_count }} workers paid
+                    </small>
+                </div>
+                <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success fs-4">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Net Pending Rest -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card p-3 h-100 border-start border-4 border-warning shadow-sm">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase lang-text" data-en="Pending Rest to Pay" data-ar="المتبقي المستحق للصرف">
+                        Pending Rest to Pay
+                    </div>
+                    <h3 class="fw-bold mb-0 mt-1 text-warning">SAR {{ total_pending_payable|floatformat:2 }}</h3>
+                    <small class="text-muted mt-1 d-block">
+                        <i class="bi bi-hourglass-split text-warning"></i> {{ pending_count }} pending workers
+                    </small>
+                </div>
+                <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning fs-4">
+                    <i class="bi bi-wallet"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters & Search Controls -->
+<div class="card p-3 mb-4 shadow-sm">
+    <form method="GET" class="row g-2 align-items-center">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <input type="hidden" name="year" value="{{ selected_year }}">
+
+        <!-- Search Bar -->
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ search_q }}" class="form-control" placeholder="Search worker name, Iqama, trade...">
+            </div>
+        </div>
+
+        <!-- Client / Project Filter -->
+        <div class="col-md-3">
+            <select name="client" class="form-select" onchange="this.form.submit()">
+                <option value="">-- All Clients / Sites --</option>
+                {% for c in clients %}
+                    <option value="{{ c.id }}" {% if client_filter == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Status Filter Buttons -->
+        <div class="col-md-3">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Workers ({{ total_count }})</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Only ({{ pending_count }})</option>
+                <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid Only ({{ paid_count }})</option>
+            </select>
+        </div>
+
+        <!-- Action / Reset -->
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+            {% if search_q or client_filter or status_filter != 'all' %}
+                <a href="{% url 'salary_disbursements' %}?month={{ selected_month }}&year={{ selected_year }}" class="btn btn-outline-secondary" title="Reset Filters">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Serial Roster Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-list-ol text-primary me-2"></i>
+            <span class="lang-text" data-en="Payroll Disbursement Serial Roster" data-ar="كشف مسير الرواتب التسلسلي">Payroll Disbursement Serial Roster</span>
+            <span class="badge bg-light text-dark border ms-2">{{ roster_items|length }} Workers Listed</span>
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                <i class="bi bi-check2"></i> {{ paid_count }} Paid
+            </span>
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                <i class="bi bi-hourglass-split"></i> {{ pending_count }} Pending
+            </span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;" class="text-center">#</th>
+                    <th>Worker & Iqama</th>
+                    <th>Client / Assignment</th>
+                    <th class="text-end">Basic Salary</th>
+                    <th class="text-end">Advances Deducted</th>
+                    <th class="text-end">Net Payable (Rest)</th>
+                    <th>Disbursement Status</th>
+                    <th class="text-center" style="width: 140px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in roster_items %}
+                <tr class="{% if item.is_paid %}table-light bg-opacity-50{% endif %}">
+                    <!-- Serial Number -->
+                    <td class="text-center fw-bold text-muted">
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-1">
+                            #{{ item.serial }}
+                        </span>
+                    </td>
+
+                    <!-- Worker Name & Trade -->
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if item.employee.photo %}
+                                <img src="{{ item.employee.photo.url }}" class="rounded-circle border" width="38" height="38" style="object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
+                                    {{ item.employee.name|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <a href="{% url 'employee_detail' item.employee.id %}" class="fw-bold text-decoration-none text-dark d-block">
+                                    {{ item.employee.name }}
+                                </a>
+                                <small class="text-muted d-block" style="font-size: 0.78rem;">
+                                    <i class="bi bi-person-badge"></i> {{ item.employee.iqama_number|default:"-" }}
+                                    {% if item.employee.position %}• {{ item.employee.position }}{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Client Company / Bench -->
+                    <td>
+                        {% if item.employee.assigned_client %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                <i class="bi bi-briefcase me-1"></i>{{ item.employee.assigned_client.name }}
+                            </span>
+                        {% elif item.employee.company_name %}
+                            <span class="badge bg-light text-dark border">
+                                {{ item.employee.company_name }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
+                                <i class="bi bi-pause-circle me-1"></i>On Bench / Unassigned
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Contract Basic Salary -->
+                    <td class="text-end fw-semibold text-dark">
+                        SAR {{ item.basic_salary|floatformat:2 }}
+                    </td>
+
+                    <!-- Advances Collected / Deducted -->
+                    <td class="text-end">
+                        {% if item.advances_deducted > 0 %}
+                            <div class="text-danger fw-bold">
+                                - SAR {{ item.advances_deducted|floatformat:2 }}
+                            </div>
+                            <small class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.7rem;">
+                                Advance Deducted
+                            </small>
+                        {% elif item.pending_advances > 0 %}
+                            <div class="text-muted">
+                                SAR 0.00
+                            </div>
+                            <small class="text-warning" style="font-size: 0.7rem;">
+                                (SAR {{ item.pending_advances }} pending)
+                            </small>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Net Payable (Rest) -->
+                    <td class="text-end">
+                        <div class="fw-bold fs-6 {% if item.is_paid %}text-success{% else %}text-primary{% endif %}">
+                            SAR {{ item.net_payable|floatformat:2 }}
+                        </div>
+                        <small class="text-muted" style="font-size: 0.72rem;">
+                            (Basic - Advances)
+                        </small>
+                    </td>
+
+                    <!-- Disbursement Status & Details -->
+                    <td>
+                        {% if item.is_paid %}
+                            <div class="d-flex align-items-center gap-1 mb-1">
+                                <span class="badge bg-success text-white py-1 px-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Paid SAR {{ item.paid_amount|floatformat:2 }}
+                                </span>
+                            </div>
+                            <div class="small text-muted" style="font-size: 0.76rem;">
+                                <i class="bi bi-credit-card-2-front"></i> {{ item.disbursement.get_payment_method_display }}
+                                • {{ item.disbursement.disbursement_date|date:"d M Y" }}
+                                {% if item.disbursement.reference_number %}
+                                    <br><span class="text-truncate d-inline-block" style="max-width: 140px;">Ref: {{ item.disbursement.reference_number }}</span>
+                                {% endif %}
+                            </div>
+                            {% if item.disbursement.receipt_doc %}
+                                <div class="mt-1">
+                                    <a href="{{ item.disbursement.receipt_doc.url }}" target="_blank" class="badge bg-light text-primary border text-decoration-none" title="View attached payment receipt / slip">
+                                        <i class="bi bi-paperclip"></i> View Receipt
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning text-dark py-1 px-2">
+                                <i class="bi bi-hourglass-split me-1"></i> Pending
+                            </span>
+                            <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                Rest Payable: <strong>SAR {{ item.net_payable|floatformat:2 }}</strong>
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Action / Pay Button -->
+                    <td class="text-center">
+                        {% if item.is_paid %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-1 shadow-sm w-100" data-bs-toggle="modal" data-bs-target="#paySalaryModal_{{ item.employee.id }}">
+                                <i class="bi bi-pencil-square me-1"></i> Edit Slip
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-sm btn-success fw-bold px-2 py-1 shadow-sm w-100" data-bs-toggle="modal" data-bs-target="#paySalaryModal_{{ item.employee.id }}">
+                                <i class="bi bi-cash-coin me-1"></i> Pay Salary
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <!-- ================== PAY SALARY POPUP MODAL ================== -->
+                <div class="modal fade" id="paySalaryModal_{{ item.employee.id }}" tabindex="-1" aria-labelledby="paySalaryModalLabel_{{ item.employee.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0 shadow">
+                            <form method="POST" action="{% url 'salary_disburse_submit' item.employee.id %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <input type="hidden" name="month" value="{{ selected_month }}">
+                                <input type="hidden" name="year" value="{{ selected_year }}">
+
+                                <div class="modal-header bg-dark text-white">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-primary text-white rounded p-2 fs-5">
+                                            <i class="bi bi-cash-stack"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="modal-title fw-bold mb-0" id="paySalaryModalLabel_{{ item.employee.id }}">
+                                                Disburse Salary: {{ item.employee.name }}
+                                            </h5>
+                                            <small class="text-light opacity-75">
+                                                Payroll Period: <strong>{{ month_name }} {{ selected_year }}</strong> • Iqama: {{ item.employee.iqama_number|default:"-" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body p-4">
+                                    <!-- Salary & Advance Calculation Breakdown Card -->
+                                    <div class="card bg-light border p-3 mb-4 rounded-3">
+                                        <div class="row text-center align-items-center g-2">
+                                            <div class="col-4">
+                                                <div class="small text-muted fw-semibold">Contract Basic Salary</div>
+                                                <div class="fs-5 fw-bold text-dark">SAR {{ item.basic_salary|floatformat:2 }}</div>
+                                            </div>
+                                            <div class="col-4 border-start border-end">
+                                                <div class="small text-muted fw-semibold">Advances Deducted</div>
+                                                <div class="fs-5 fw-bold text-danger">
+                                                    {% if item.advances_deducted > 0 %}
+                                                        - SAR {{ item.advances_deducted|floatformat:2 }}
+                                                    {% elif item.pending_advances > 0 %}
+                                                        - SAR {{ item.pending_advances|floatformat:2 }}
+                                                    {% else %}
+                                                        SAR 0.00
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="small text-muted fw-semibold">Net Rest Payable</div>
+                                                <div class="fs-4 fw-bold text-success">
+                                                    SAR {{ item.net_payable|floatformat:2 }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Form Inputs -->
+                                    <div class="row g-3">
+                                        <!-- Amount to Disburse -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">
+                                                Disbursed Amount (SAR) <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light fw-bold">SAR</span>
+                                                <input type="number" step="0.01" min="0" name="amount_paid" class="form-control fw-bold fs-5 text-success"
+                                                    value="{% if item.is_paid %}{{ item.paid_amount }}{% else %}{{ item.net_payable }}{% endif %}" required>
+                                            </div>
+                                            <small class="text-muted">Calculated net rest payable after deducting advances.</small>
+                                        </div>
+
+                                        <!-- Disbursement Date -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">
+                                                Disbursement Date <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" name="disbursement_date" class="form-control"
+                                                value="{% if item.is_paid %}{{ item.disbursement.disbursement_date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" required>
+                                            <small class="text-muted">Date payment was transferred or handed over.</small>
+                                        </div>
+
+                                        <!-- Payment Channel / Method -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">
+                                                Payment Method / Channel <span class="text-danger">*</span>
+                                            </label>
+                                            <select name="payment_method" class="form-select" required>
+                                                <option value="bank_transfer" {% if item.is_paid and item.disbursement.payment_method == 'bank_transfer' %}selected{% endif %}>
+                                                    🏦 Bank Transfer / WPS (تحويل بنكي / حماية الأجور)
+                                                </option>
+                                                <option value="cash" {% if item.is_paid and item.disbursement.payment_method == 'cash' %}selected{% endif %}>
+                                                    💵 Cash Payment (نقداً / إيصال استلام)
+                                                </option>
+                                                <option value="cheque" {% if item.is_paid and item.disbursement.payment_method == 'cheque' %}selected{% endif %}>
+                                                    📑 Cheque (شيك بنكي)
+                                                </option>
+                                                <option value="other" {% if item.is_paid and item.disbursement.payment_method == 'other' %}selected{% endif %}>
+                                                    ⚡ Other Method (أخرى)
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Disbursing Account / IBAN -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">
+                                                Disbursing Account / Bank IBAN
+                                            </label>
+                                            <input type="text" name="disbursing_account" class="form-control"
+                                                placeholder="e.g. Al Rajhi Bank IBAN SA448000..."
+                                                value="{% if item.is_paid %}{{ item.disbursement.disbursing_account|default:'' }}{% else %}{{ item.employee.salary_from_account|default:'' }}{% endif %}">
+                                            <small class="text-muted">Originating bank account or company paying entity.</small>
+                                        </div>
+
+                                        <!-- Transaction Reference / Voucher Number -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">
+                                                Transaction Ref / Voucher #
+                                            </label>
+                                            <input type="text" name="reference_number" class="form-control"
+                                                placeholder="e.g. WPS-REF-90214 or Voucher #304"
+                                                value="{% if item.is_paid %}{{ item.disbursement.reference_number|default:'' }}{% endif %}">
+                                        </div>
+
+                                        <!-- Document Attachment -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">
+                                                Attach Receipt / Transfer Slip (Optional)
+                                            </label>
+                                            <input type="file" name="receipt_doc" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                                            {% if item.is_paid and item.disbursement.receipt_doc %}
+                                                <div class="mt-1 small">
+                                                    <span class="text-muted">Current file:</span>
+                                                    <a href="{{ item.disbursement.receipt_doc.url }}" target="_blank" class="fw-semibold text-primary">
+                                                        <i class="bi bi-file-earmark-arrow-down"></i> View uploaded slip
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                            <small class="text-muted">Upload bank transfer PDF, deposit receipt, or signed cash slip.</small>
+                                        </div>
+
+                                        <!-- Settle Advances Checkbox -->
+                                        {% if item.pending_advances > 0 or item.advances_deducted > 0 %}
+                                        <div class="col-12">
+                                            <div class="form-check p-3 bg-light rounded border">
+                                                <input class="form-check-input ms-0 me-2" type="checkbox" name="settle_advances" id="settle_advances_{{ item.employee.id }}" value="true" checked>
+                                                <label class="form-check-label fw-semibold text-dark" for="settle_advances_{{ item.employee.id }}">
+                                                    <i class="bi bi-check2-circle text-success me-1"></i>
+                                                    Deduct & Automatically Settle Collected Advances (خصم وتسوية السلف المعلقة)
+                                                </label>
+                                                <div class="small text-muted mt-1 ps-4">
+                                                    Marks pending advance salary records as fully settled in the Spending Tracker upon completing this disbursement.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Notes & Remarks -->
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold text-dark">
+                                                Payment Notes & Remarks
+                                            </label>
+                                            <textarea name="notes" class="form-control" rows="2"
+                                                placeholder="Any overtime additions, bonuses, or special payment notes...">{% if item.is_paid %}{{ item.disbursement.notes|default:'' }}{% endif %}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer bg-light">
+                                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm">
+                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                        {% if item.is_paid %}Update Disbursement Slip{% else %}Confirm & Disburse Salary{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-cash-coin fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        <h5>No workers found matching the selected criteria.</h5>
+                        <p class="small text-muted mb-0">Try changing the filters, month, or search keywords.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table Footer Summary -->
+    <div class="card-footer bg-light py-3 border-top">
+        <div class="row align-items-center text-muted small">
+            <div class="col-md-6">
+                Showing <strong>{{ roster_items|length }}</strong> of <strong>{{ total_count }}</strong> registered workers for <strong>{{ month_name }} {{ selected_year }}</strong>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <span>Total Disbursed: <strong class="text-success">SAR {{ total_net_disbursed|floatformat:2 }}</strong></span>
+                <span class="mx-2">•</span>
+                <span>Rest Pending: <strong class="text-warning">SAR {{ total_pending_payable|floatformat:2 }}</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,17 +1,22 @@
 {% extends 'employees/base.html' %}
+{% block title %}Add New Worker - {{ company.name }}{% endblock %}
+
 {% block content %}
-<div class="card p-4 mx-auto shadow-sm" style="max-width: 750px;">
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 820px;">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold m-0 lang-text" data-en="Add New Employee" data-ar="إضافة موظف جديد">Add New Employee</h4>
-        <a href="/employees/dashboard/" class="btn btn-outline-secondary btn-sm lang-text" data-en="← Back" data-ar="← رجوع">← Back</a>
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="Register New Worker" data-ar="تسجيل عامل جديد">Register New Worker</h4>
+            <small class="text-muted">Contracting Company: <strong>{{ company.name }}</strong> (Quota: {{ company.worker_count }}/{{ company.max_employees }})</small>
+        </div>
+        <a href="{% url 'employees_list' %}" class="btn btn-outline-secondary btn-sm lang-text" data-en="← Back" data-ar="← رجوع">← Back to List</a>
     </div>
     <hr class="my-2 opacity-25">
 
     {% if form.errors %}
         <div class="alert alert-danger alert-dismissible fade show my-3" role="alert">
             <i class="bi bi-exclamation-octagon-fill me-2 fs-5"></i>
-            <strong>Duplicate or Invalid Record Blocked!</strong>
-            <ul class="mb-0 mt-2 ps-3">
+            <strong>Please correct the form errors:</strong>
+            <ul class="mb-0 mt-2 ps-3 small">
                 {% for field in form %}
                     {% for error in field.errors %}
                         <li><strong>{{ field.label }}:</strong> {{ error }}</li>
@@ -20,23 +25,214 @@
             </ul>
         </div>
     {% endif %}
+
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="row g-3">
-            {% for field in form %}
-                <div class="col-md-6">
-                    <label class="form-label small fw-bold text-muted mb-1">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <div class="text-danger small mt-1 fw-bold"><i class="bi bi-x-circle me-1"></i>{{ field.errors.0 }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+        <!-- Section 1: Personal & Identity -->
+        <div class="small fw-bold text-primary text-uppercase mb-2 pb-1 border-bottom">
+            <i class="bi bi-person-badge me-1"></i> 1. Personal & Identity
         </div>
-        <button type="submit" class="btn btn-primary w-100 fw-bold mt-4 py-2 lang-text" data-en="Save Employee Record" data-ar="حفظ سجل الموظف">Save Employee Record</button>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.name.label }} *</label>
+                {{ form.name }}
+                {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.nationality.label }} *</label>
+                {{ form.nationality }}
+                {% if form.nationality.errors %}<div class="text-danger small mt-1">{{ form.nationality.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.iqama_number.label }} *</label>
+                {{ form.iqama_number }}
+                {% if form.iqama_number.errors %}<div class="text-danger small mt-1">{{ form.iqama_number.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.passport_number.label }} *</label>
+                {{ form.passport_number }}
+                {% if form.passport_number.errors %}<div class="text-danger small mt-1">{{ form.passport_number.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.phone_number.label }}</label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}<div class="text-danger small mt-1">{{ form.phone_number.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.photo.label }}</label>
+                {{ form.photo }}
+                {% if form.photo.errors %}<div class="text-danger small mt-1">{{ form.photo.errors.0 }}</div>{% endif %}
+            </div>
+        </div>
+
+        <!-- Section 2: Sponsorship & Deployment -->
+        <div class="small fw-bold text-primary text-uppercase mb-2 pb-1 border-bottom mt-4">
+            <i class="bi bi-briefcase me-1"></i> 2. Sponsorship & Site Assignment
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.position.label }} *</label>
+                {{ form.position }}
+                {% if form.position.errors %}<div class="text-danger small mt-1">{{ form.position.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.visa_status.label }}</label>
+                {{ form.visa_status }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.client_project.label }}</label>
+                {{ form.client_project }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.company_name.label }}</label>
+                {{ form.company_name }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.kafeel_name.label }}</label>
+                {{ form.kafeel_name }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.iqama_expiry.label }} *</label>
+                {{ form.iqama_expiry }}
+                {% if form.iqama_expiry.errors %}<div class="text-danger small mt-1">{{ form.iqama_expiry.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.joining_date.label }} *</label>
+                {{ form.joining_date }}
+                {% if form.joining_date.errors %}<div class="text-danger small mt-1">{{ form.joining_date.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.transfer_dates.label }}</label>
+                {{ form.transfer_dates }}
+            </div>
+        </div>
+
+        <!-- Section 3: Financial & Payroll Setup -->
+        <div class="small fw-bold text-success text-uppercase mb-2 pb-1 border-bottom mt-4">
+            <i class="bi bi-cash-coin me-1"></i> 3. Financial Contract & Payroll Details
+        </div>
+        <div class="p-3 bg-light rounded-3 border mb-3">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-success mb-1">
+                        <i class="bi bi-cash me-1"></i> {{ form.basic_salary.label }} *
+                    </label>
+                    {{ form.basic_salary }}
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">Base monthly wage paid to the worker.</small>
+                    {% if form.basic_salary.errors %}<div class="text-danger small mt-1">{{ form.basic_salary.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-primary mb-1">
+                        <i class="bi bi-receipt me-1"></i> {{ form.receiving_amount.label }} *
+                    </label>
+                    {{ form.receiving_amount }}
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">Monthly contract amount invoiced to client.</small>
+                    {% if form.receiving_amount.errors %}<div class="text-danger small mt-1">{{ form.receiving_amount.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-dark mb-1">
+                        <i class="bi bi-bank me-1"></i> {{ form.salary_from_account.label }}
+                    </label>
+                    {{ form.salary_from_account }}
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">Company bank IBAN or WPS account disbursing payroll.</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-dark mb-1">
+                        <i class="bi bi-building me-1"></i> {{ form.salary_payment_company.label }}
+                    </label>
+                    {{ form.salary_payment_company }}
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">Official legal entity name on payment advice.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Accommodation, Location & Notes -->
+        <div class="small fw-bold text-secondary text-uppercase mb-2 pb-1 border-bottom mt-4">
+            <i class="bi bi-house-door me-1"></i> 4. Accommodation, Location & Notes
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">Assign Accommodation / Housing</label>
+                <select name="property_id" class="form-select">
+                    <option value="">-- No Accommodation Assigned --</option>
+                    {% for p in properties %}
+                        <option value="{{ p.id }}">
+                            {{ p.property_name }} {% if p.charge_amount == 0 %}(Client Provided - Free SAR 0.00){% else %}(SAR {{ p.charge_amount }}){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">Custom Housing Cost (SAR)</label>
+                <input type="number" step="0.01" min="0" name="custom_charge" class="form-control" placeholder="Default or 0.00 if Client Provided">
+                <small class="text-muted" style="font-size: 11px;">Leave empty for property default, or enter <strong>0.00</strong> if client covers it.</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.working_place.label }}</label>
+                {{ form.working_place }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.country.label }}</label>
+                {{ form.country }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted mb-1">{{ form.additional_note.label }}</label>
+                {{ form.additional_note }}
+            </div>
+        </div>
+
+        <!-- Section 5: Contractual Leave Entitlement & Terms -->
+        <div class="small fw-bold text-info text-uppercase mb-2 pb-1 border-bottom mt-4">
+            <i class="bi bi-calendar-check me-1"></i> 5. Contractual Leave Entitlement (Saudi Labor Law & Contract)
+        </div>
+        <div class="p-3 bg-light rounded-3 border mb-3">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-success mb-1">
+                        {{ form.contract_annual_leave.label }} *
+                    </label>
+                    {{ form.contract_annual_leave }}
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">Pre-populated from company defaults. Customize per worker's contract.</small>
+                    {% if form.contract_annual_leave.errors %}<div class="text-danger small mt-1">{{ form.contract_annual_leave.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_carry_forward.label }}</label>
+                    {{ form.contract_carry_forward }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_sick_leave.label }}</label>
+                    {{ form.contract_sick_leave }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_emergency_leave.label }}</label>
+                    {{ form.contract_emergency_leave }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_ticket_frequency.label }}</label>
+                    {{ form.contract_ticket_frequency }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_negative_limit.label }}</label>
+                    {{ form.contract_negative_limit }}
+                </div>
+                <div class="col-md-12">
+                    <div class="form-check mt-1">
+                        {{ form.contract_allow_negative }}
+                        <label class="form-check-label small fw-bold text-dark ms-1" for="{{ form.contract_allow_negative.id_for_label }}">
+                            Allow Advance Leave (Negative Balance) for this worker
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold text-muted mb-1">{{ form.leave_contract_notes.label }}</label>
+                    {{ form.leave_contract_notes }}
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 fw-bold mt-4 py-2 shadow-sm lang-text" data-en="Save & Register Worker" data-ar="حفظ وتسجيل العامل">
+            <i class="bi bi-person-check-fill me-1"></i> Save & Register Worker
+        </button>
     </form>
 </div>
-<script>
-    document.querySelectorAll('input, select, textarea').forEach(el => el.classList.add('form-control'));
-</script>
 {% endblock %}

@@ -1,0 +1,317 @@
+{% extends 'employees/base.html' %}
+{% block title %}Spending & Cost Tracker - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="card p-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #1e293b, #334155); color: white;">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="bg-primary text-white rounded-3 p-2 fs-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0 lang-text" data-en="Employee Spending & Cost Tracker" data-ar="متابعة مصاريف وتكاليف العمال">
+                        Employee Spending & Cost Tracker
+                    </h4>
+                    <small class="text-light opacity-75">
+                        Track advances, transportation, sick leaves, vacations, accruals & Iqama renewal fees for: <strong>{{ company.name }}</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary fw-bold px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#recordCompanySpendingModal">
+                <i class="bi bi-plus-circle me-1"></i> + Record Spending / Advance
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Summary KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-dark shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Total Extra Spending</div>
+            <h3 class="fw-bold mb-0 mt-1 text-dark">SAR {{ total_spending }}</h3>
+            <small class="text-muted mt-1 d-block">All categories combined</small>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-danger shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Pending Salary Advances</div>
+            <h3 class="fw-bold mb-0 mt-1 text-danger">SAR {{ total_advances_pending }}</h3>
+            <small class="text-muted mt-1 d-block">Total Advances: SAR {{ total_advances }}</small>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-primary shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Iqama Renewal Costs</div>
+            <h3 class="fw-bold mb-0 mt-1 text-primary">SAR {{ total_iqama }}</h3>
+            <small class="text-muted mt-1 d-block">Government & Jawazat fees</small>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-info shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Transport & Travel</div>
+            <h3 class="fw-bold mb-0 mt-1 text-info">SAR {{ total_transport }}</h3>
+            <small class="text-muted mt-1 d-block">Commute, flights & relocation</small>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-warning shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Sick Leave & Medical</div>
+            <h4 class="fw-bold mb-0 mt-1 text-warning">SAR {{ total_sick }}</h4>
+            <small class="text-muted mt-1 d-block">Clinic visits, treatments & paid sick leave</small>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-secondary shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Vacations & Flight Tickets</div>
+            <h4 class="fw-bold mb-0 mt-1 text-secondary">SAR {{ total_vacation }}</h4>
+            <small class="text-muted mt-1 d-block">Exit re-entry visas & annual tickets</small>
+        </div>
+    </div>
+    <div class="col-lg-4 col-sm-6">
+        <div class="card p-3 h-100 border-start border-4 border-success shadow-sm">
+            <div class="text-muted small fw-bold text-uppercase">Accruals & End of Service (EOSB)</div>
+            <h4 class="fw-bold mb-0 mt-1 text-success">SAR {{ total_accrual }}</h4>
+            <small class="text-muted mt-1 d-block">Indemnity & leave settlement provisions</small>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card p-3 mb-4 shadow-sm">
+    <form method="GET" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <label class="form-label small fw-bold text-muted mb-1">Filter by Category</label>
+            <select name="type" class="form-select" onchange="this.form.submit()">
+                <option value="">-- All Spending Categories --</option>
+                {% for code, label in expense_types %}
+                    <option value="{{ code }}" {% if type_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label small fw-bold text-muted mb-1">Filter by Worker</label>
+            <select name="emp" class="form-select" onchange="this.form.submit()">
+                <option value="">-- All Registered Workers --</option>
+                {% for w in workers %}
+                    <option value="{{ w.id }}" {% if emp_filter == w.id|stringformat:"i" %}selected{% endif %}>{{ w.name }} ({{ w.iqama_number }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 mt-auto">
+            {% if type_filter or emp_filter %}
+                <a href="{% url 'spending_tracker' %}" class="btn btn-outline-secondary w-100 fw-semibold">
+                    <i class="bi bi-x-circle me-1"></i> Reset
+                </a>
+            {% else %}
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                    <i class="bi bi-filter me-1"></i> Filter
+                </button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Transactions Table -->
+<div class="card p-4 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold m-0">Spending Transactions ({{ expenses.count }})</h5>
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#recordCompanySpendingModal">
+            <i class="bi bi-plus"></i> Add New
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Worker</th>
+                    <th>Category</th>
+                    <th>Amount (SAR)</th>
+                    <th>Payroll Treatment</th>
+                    <th>Notes / Purpose</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for exp in expenses %}
+                <tr>
+                    <td class="text-nowrap fw-semibold">{{ exp.expense_date }}</td>
+                    <td>
+                        <a href="{% url 'employee_detail' exp.employee.id %}" class="fw-bold text-decoration-none text-dark">
+                            {{ exp.employee.name }}
+                        </a>
+                        <small class="text-muted d-block font-monospace" style="font-size: 11px;">{{ exp.employee.iqama_number }}</small>
+                    </td>
+                    <td>
+                        {% if exp.expense_type == 'iqama_renewal' %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">
+                                <i class="bi bi-shield-check me-1"></i> Iqama Renewal
+                            </span>
+                        {% elif exp.expense_type == 'advance_salary' %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                <i class="bi bi-cash me-1"></i> Salary Advance
+                            </span>
+                        {% elif exp.expense_type == 'transport' %}
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+                                <i class="bi bi-truck me-1"></i> Transport
+                            </span>
+                        {% elif exp.expense_type == 'sick_leave' %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">
+                                <i class="bi bi-heart-pulse me-1"></i> Sick Leave / Medical
+                            </span>
+                        {% elif exp.expense_type == 'vacation' %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">
+                                <i class="bi bi-airplane me-1"></i> Vacation / Ticket
+                            </span>
+                        {% elif exp.expense_type == 'accrual' %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                <i class="bi bi-piggy-bank me-1"></i> Accrual / EOSB
+                            </span>
+                        {% else %}
+                            <span class="badge bg-dark bg-opacity-10 text-dark border px-2 py-1">Other Expense</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold">
+                        {% if exp.amount == 0 %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                <i class="bi bi-gift-fill me-1"></i> SAR 0.00 (Client-Paid)
+                            </span>
+                        {% else %}
+                            <span class="fs-6">SAR {{ exp.amount }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if exp.deduct_from_salary %}
+                            {% if exp.is_settled %}
+                                <span class="badge bg-success"><i class="bi bi-check2 me-1"></i> Settled / Deducted</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i> Deduct from Salary</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-light text-muted border">Company Overhead</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 250px;" title="{{ exp.notes }}">
+                            {{ exp.notes|default:"-" }}
+                        </div>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if exp.deduct_from_salary %}
+                        <a href="{% url 'expense_toggle_settle' exp.id %}" class="btn btn-xs btn-outline-secondary py-1 px-2" style="font-size: 11px;">
+                            {% if exp.is_settled %}Mark Pending{% else %}Mark Settled{% endif %}
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'expense_delete' exp.id %}" onclick="return confirm('Delete this spending record?');" class="btn btn-sm btn-outline-danger p-1 px-2 ms-1" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-wallet2 fs-1 d-block mb-2 text-secondary"></i>
+                        <h5>No spending records matching criteria.</h5>
+                        <p class="small">Click the button below to log advances, transportation, sick leaves or other expenses.</p>
+                        <button type="button" class="btn btn-primary btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#recordCompanySpendingModal">
+                            + Record Spending Entry
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Record Spending Across Company -->
+<div class="modal fade" id="recordCompanySpendingModal" tabindex="-1" aria-labelledby="recordCompanySpendingLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" id="companySpendingForm">
+                {% csrf_token %}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="recordCompanySpendingLabel">
+                        <i class="bi bi-wallet2 me-2"></i> Record Employee Spending / Cost
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Select Worker *</label>
+                        <select name="selected_worker_id" class="form-select" id="companySpendingWorkerSelect" required onchange="updateSpendingActionUrl(this)">
+                            <option value="">-- Choose Employee --</option>
+                            {% for w in workers %}
+                                <option value="{{ w.id }}">{{ w.name }} ({{ w.position }} - {{ w.iqama_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Spending Category *</label>
+                        <select name="expense_type" class="form-select" required>
+                            <option value="advance_salary">Advance Salary / Loan (سلفة راتب)</option>
+                            <option value="transport">Transportation / Travel (مواصلات وترحيل)</option>
+                            <option value="sick_leave">Sick Leave / Medical (إجازة مرضية وعلاج)</option>
+                            <option value="vacation">Vacation / Exit-Reentry / Ticket (تذاكر وتأشيرات)</option>
+                            <option value="accrual">Accrual / EOSB Gratuity (مستحقات ونهاية خدمة)</option>
+                            <option value="iqama_renewal">Iqama Renewal Fee (رسوم تجديد الإقامة)</option>
+                            <option value="other">Other Expense (مصاريف أخرى)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Amount (SAR) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">SAR</span>
+                            <input type="number" step="0.01" min="0" name="amount" value="0.00" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <small class="text-muted" style="font-size: 11px;">Cost in SAR. Enter <strong>0</strong> if covered by client company or free.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Date of Expense *</label>
+                        <input type="date" name="expense_date" value="{% now 'Y-m-d' %}" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Description / Notes</label>
+                        <input type="text" name="notes" class="form-control" placeholder="e.g. Flight ticket for leave, medical prescription, advance cash...">
+                    </div>
+
+                    <div class="form-check p-3 bg-light rounded border mb-2">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="deduct_from_salary" id="compDeductCheckbox" checked>
+                        <label class="form-check-label small fw-bold text-dark" for="compDeductCheckbox">
+                            Deduct from monthly salary payroll
+                        </label>
+                        <small class="text-muted d-block" style="font-size: 11px;">Check if this is a salary advance or recoverable expense.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm">
+                        <i class="bi bi-save me-1"></i> Record Spending
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateSpendingActionUrl(selectEl) {
+    const form = document.getElementById('companySpendingForm');
+    const workerId = selectEl.value;
+    if (workerId) {
+        form.action = '/employees/' + workerId + '/expenses/add/?next=/spending/';
+    } else {
+        form.action = '#';
+    }
+}
+</script>
+{% endblock %}

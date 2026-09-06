@@ -1,0 +1,141 @@
+{% extends 'employees/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Back & Header -->
+    <div class="mb-3">
+        <a href="{% url 'company_jobs_list' %}" class="btn btn-sm btn-outline-secondary fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Company Job Postings
+        </a>
+    </div>
+
+    <!-- Requirement Summary Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white;">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-primary px-3 py-1 rounded-pill fw-semibold">{{ job.get_trade_category_display }}</span>
+                        <span class="badge bg-light text-dark px-3 py-1 rounded-pill fw-semibold"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ job.work_location }}</span>
+                    </div>
+                    <h3 class="fw-bold mb-1">{{ job.title }}</h3>
+                    <p class="text-light opacity-75 small mb-0">
+                        Needed: <strong>{{ job.workers_needed }} Workers</strong> | Salary Budget: <strong>SAR {{ job.salary_min|floatformat:0 }} - {{ job.salary_max|floatformat:0 }}</strong>
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'job_detail' job.pk %}" class="btn btn-outline-light fw-semibold btn-sm">
+                        <i class="bi bi-eye me-1"></i> View Full Posting
+                    </a>
+                    <a href="{% url 'company_two_matched_onboard' %}" class="btn btn-warning text-dark fw-bold btn-sm shadow-sm">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Two-Matched Onboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applicants List Section -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-people-fill text-primary me-2"></i> Verified Candidate Applicants ({{ applications.count }})
+            </h6>
+            <span class="text-muted small">Candidates who registered with one-time referral links and verified IDs</span>
+        </div>
+        <div class="card-body p-0">
+            {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Candidate Details</th>
+                            <th>Trade & Experience</th>
+                            <th>Location & Qiwa Status</th>
+                            <th>Expected Salary</th>
+                            <th>Application Notes & CV</th>
+                            <th>Date Applied</th>
+                            <th class="text-end">Fast Recruitment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-6" style="width: 40px; height: 40px; min-width: 40px;">
+                                        {{ app.candidate.full_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ app.candidate.full_name }}</div>
+                                        <div class="text-muted small">
+                                            <span class="badge bg-light text-secondary border me-1">{{ app.candidate.nationality }}</span>
+                                            Iqama: <code>{{ app.candidate.iqama_number }}</code>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="bi bi-telephone-fill text-success me-1"></i> <code>{{ app.candidate.phone_number }}</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-primary">{{ app.candidate.trade }}</div>
+                                <div class="text-muted small">{{ app.candidate.experience_years }} Years of Experience</div>
+                            </td>
+                            <td>
+                                <div class="small text-dark mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ app.candidate.current_city }}</div>
+                                {% if app.candidate.iqama_transferable %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle py-1">
+                                        <i class="bi bi-check-circle me-1"></i> Qiwa Transferable
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary py-1">
+                                        Non-Transferable
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold text-success fs-6">SAR {{ app.candidate.expected_salary|floatformat:0 }}</div>
+                                <span class="text-muted small">per month</span>
+                            </td>
+                            <td>
+                                {% if app.candidate.cv_document %}
+                                <div class="mb-1">
+                                    <a href="{{ app.candidate.cv_document.url }}" target="_blank" class="btn btn-xs btn-outline-primary py-1 px-2" style="font-size: 0.72rem;">
+                                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download CV
+                                    </a>
+                                </div>
+                                {% endif %}
+                                {% if app.cover_message %}
+                                <div class="text-muted small fst-italic" style="max-width: 220px; font-size: 0.75rem;">
+                                    "{{ app.cover_message }}"
+                                </div>
+                                {% else %}
+                                <span class="text-muted small">Direct Interest Expressed</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ app.applied_at|date:"M d, Y" }}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'company_two_matched_onboard' %}?iqama={{ app.candidate.iqama_number }}&phone={{ app.candidate.phone_number }}&trade={{ app.candidate.trade }}&salary={{ app.candidate.expected_salary }}" class="btn btn-sm btn-warning text-dark fw-bold shadow-sm text-nowrap d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                    <span>Fast Onboard</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people text-muted" style="font-size: 3.5rem;"></i>
+                <h5 class="fw-bold text-dark mt-3 mb-1">No Applications Yet</h5>
+                <p class="text-muted small mb-0">No candidates have applied to this requirement yet. It is actively displayed on the private social feed.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

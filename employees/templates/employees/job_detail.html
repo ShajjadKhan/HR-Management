@@ -1,0 +1,303 @@
+{% extends 'employees/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'jobs_feed' %}" class="btn btn-sm btn-outline-secondary fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Social Job Feed
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Job Info Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4 p-md-5">
+                    <!-- Top Status & Company -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
+                                <i class="bi bi-tools me-1"></i> {{ job.get_trade_category_display }}
+                            </span>
+                            {% if job.is_featured %}
+                                <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill fw-bold">
+                                    ⭐ Urgent / Featured
+                                </span>
+                            {% endif %}
+                        </div>
+                        <span class="badge {% if job.status == 'published' %}bg-success{% elif job.status == 'pending_approval' %}bg-warning text-dark{% elif job.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2 rounded-pill fw-semibold">
+                            {{ job.get_status_display }}
+                        </span>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-2">{{ job.title }}</h2>
+                    <h5 class="text-primary fw-semibold mb-3">
+                        <i class="bi bi-building me-1"></i> {{ job.company.name }}
+                    </h5>
+
+                    <div class="d-flex flex-wrap align-items-center gap-3 text-muted small mb-4 pb-3 border-bottom">
+                        <div><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ job.work_location }}</div>
+                        {% if job.project_name %}
+                        <div><i class="bi bi-hammer text-secondary me-1"></i> Project: <strong>{{ job.project_name }}</strong></div>
+                        {% endif %}
+                        <div><i class="bi bi-calendar3 me-1"></i> Posted {{ job.created_at|date:"M d, Y" }}</div>
+                        <div><i class="bi bi-clock me-1"></i> {{ job.created_at|timesince }} ago</div>
+                    </div>
+
+                    <!-- Key Parameters Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-light rounded-3 text-center border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">WORKERS REQUIRED</div>
+                                <div class="fw-bold text-dark fs-5 mt-1">{{ job.workers_needed }} Workers</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-light rounded-3 text-center border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">SALARY BUDGET</div>
+                                <div class="fw-bold text-success fs-5 mt-1">SAR {{ job.salary_min|floatformat:0 }} {% if job.salary_max %}- {{ job.salary_max|floatformat:0 }}{% endif %}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-light rounded-3 text-center border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">EXPERIENCE</div>
+                                <div class="fw-bold text-dark fs-5 mt-1">{{ job.experience_years }}+ Years</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3 bg-light rounded-3 text-center border">
+                                <div class="text-muted small" style="font-size: 0.72rem;">IQAMA TRANSFER</div>
+                                <div class="fw-bold fs-5 mt-1 {% if job.iqama_transfer_required %}text-danger{% else %}text-info{% endif %}">
+                                    {% if job.iqama_transfer_required %}Required{% else %}Flexible{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Scope & Description -->
+                    <h5 class="fw-bold text-dark mb-3">Job Description & Manpower Scope</h5>
+                    <div class="p-4 bg-light bg-opacity-50 rounded-3 border mb-4" style="line-height: 1.7; font-size: 0.95rem; white-space: pre-line;">
+                        {{ job.description }}
+                    </div>
+
+                    <!-- Benefits & Amenities -->
+                    <h5 class="fw-bold text-dark mb-3">Provided Amenities & Working Terms</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 border d-flex align-items-center gap-3 {% if job.accommodation_provided %}border-success-subtle bg-success-subtle bg-opacity-25{% else %}bg-light text-muted{% endif %}">
+                                <i class="bi bi-house-door-fill fs-3 {% if job.accommodation_provided %}text-success{% else %}text-muted{% endif %}"></i>
+                                <div>
+                                    <div class="fw-bold small text-dark">Accommodation</div>
+                                    <div class="small text-muted">{% if job.accommodation_provided %}Provided by Company{% else %}Worker Self-Arranged{% endif %}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 border d-flex align-items-center gap-3 {% if job.food_provided %}border-success-subtle bg-success-subtle bg-opacity-25{% else %}bg-light text-muted{% endif %}">
+                                <i class="bi bi-cup-hot-fill fs-3 {% if job.food_provided %}text-success{% else %}text-muted{% endif %}"></i>
+                                <div>
+                                    <div class="fw-bold small text-dark">Food / Allowance</div>
+                                    <div class="small text-muted">{% if job.food_provided %}Provided / Allowance{% else %}Not Provided{% endif %}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 border d-flex align-items-center gap-3 {% if job.transportation_provided %}border-success-subtle bg-success-subtle bg-opacity-25{% else %}bg-light text-muted{% endif %}">
+                                <i class="bi bi-bus-front-fill fs-3 {% if job.transportation_provided %}text-success{% else %}text-muted{% endif %}"></i>
+                                <div>
+                                    <div class="fw-bold small text-dark">Transportation</div>
+                                    <div class="small text-muted">{% if job.transportation_provided %}Worksite Transport Free{% else %}Not Provided{% endif %}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applicants Management Section (Visible to Company Owner and Master Admin) -->
+            {% if applicants is not None %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            <i class="bi bi-people-fill text-primary me-2"></i> Candidates & Applicants ({{ applicants.count }})
+                        </h5>
+                        <div class="text-muted small">Verified candidate profiles who expressed interest in this requirement.</div>
+                    </div>
+                    {% if company %}
+                    <a href="{% url 'company_two_matched_onboard' %}" class="btn btn-sm btn-warning text-dark fw-bold shadow-sm">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Two-Matched Fast Onboard
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    {% if applicants %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Candidate Name</th>
+                                    <th>Trade / Experience</th>
+                                    <th>City & Iqama Status</th>
+                                    <th>Expected Salary</th>
+                                    <th>CV & Message</th>
+                                    <th>Applied Date</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applicants %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ app.candidate.full_name }}</div>
+                                        <div class="text-muted small">
+                                            <span class="badge bg-light text-secondary border me-1">{{ app.candidate.nationality }}</span>
+                                            Iqama: <code>{{ app.candidate.iqama_number }}</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-primary">{{ app.candidate.trade }}</div>
+                                        <div class="text-muted small">{{ app.candidate.experience_years }} Years Experience</div>
+                                    </td>
+                                    <td>
+                                        <div class="small text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ app.candidate.current_city }}</div>
+                                        <div class="small">
+                                            {% if app.candidate.iqama_transferable %}
+                                                <span class="badge bg-success-subtle text-success">Transferable</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Non-Transferable</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-success">SAR {{ app.candidate.expected_salary|floatformat:0 }}</div>
+                                    </td>
+                                    <td>
+                                        {% if app.candidate.cv_document %}
+                                        <a href="{{ app.candidate.cv_document.url }}" target="_blank" class="btn btn-xs btn-outline-primary py-1 px-2 mb-1" style="font-size: 0.72rem;">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> View CV
+                                        </a>
+                                        {% endif %}
+                                        {% if app.cover_message %}
+                                        <div class="text-muted small fst-italic" style="max-width: 200px; font-size: 0.75rem;">
+                                            "{{ app.cover_message|truncatewords:10 }}"
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ app.applied_at|date:"M d, Y" }}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if company %}
+                                        <a href="{% url 'company_two_matched_onboard' %}?iqama={{ app.candidate.iqama_number }}&phone={{ app.candidate.phone_number }}&trade={{ app.candidate.trade }}&salary={{ app.candidate.expected_salary }}" class="btn btn-sm btn-warning text-dark fw-bold text-nowrap shadow-sm" title="Verify Iqama + Phone and Onboard">
+                                            <i class="bi bi-person-plus-fill me-1"></i> Onboard Worker
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox text-muted fs-1"></i>
+                        <p class="text-muted small mt-2 mb-0">No candidate applications received yet for this requirement.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar / Action Column -->
+        <div class="col-lg-4">
+            <!-- Candidate Apply Action Card -->
+            {% if is_jobseeker %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-2">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Express Your Interest
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        Submit your verified profile directly to the recruitment desk of <strong>{{ job.company.name }}</strong>.
+                    </p>
+
+                    {% if already_applied %}
+                        <div class="alert alert-success border-0 shadow-sm mb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill fs-4 text-success"></i>
+                                <div>
+                                    <div class="fw-bold">Interest Registered!</div>
+                                    <div class="small">The contracting company has received your verified profile and contact details.</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif jobseeker_profile.status == 'active' %}
+                        <form method="POST" action="{% url 'job_apply' job.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Message to Employer (Optional)</label>
+                                <textarea name="cover_message" rows="3" class="form-control" placeholder="Mention your current project status, notice period, or relevant certifications..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-send-fill me-1"></i> Send Express Interest
+                            </button>
+                        </form>
+                    {% elif jobseeker_profile.status == 'pending_approval' %}
+                        <div class="alert alert-warning border-0 shadow-sm mb-0">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            <strong>Account Pending Approval:</strong> Master Administrator is reviewing your invitation details. Once approved, you can apply immediately.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Company Contact & Info Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-3">Company Overview</h6>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 fs-3">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">{{ job.company.name }}</div>
+                            <div class="text-muted small">Registered Contracting Firm</div>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Work Location</span>
+                            <span class="fw-semibold text-dark">{{ job.work_location }}</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Workers Needed</span>
+                            <span class="fw-semibold text-dark">{{ job.workers_needed }}</span>
+                        </li>
+                        <li class="list-group-item px-0 d-flex justify-content-between">
+                            <span class="text-muted">Verification Status</span>
+                            <span class="badge bg-success-subtle text-success">Master Verified</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Network Safety Guarantee Card -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="bi bi-shield-check text-success me-1"></i> Verified Network Security
+                    </h6>
+                    <p class="text-muted small mb-0" style="font-size: 0.8rem; line-height: 1.5;">
+                        All job postings on this platform undergo Master Administrator pre-publication review. Candidate profiles are authenticated via single-use invitation tokens and verified national Iqama IDs to prevent fraud and spam.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,50 +1,468 @@
 {% extends 'employees/base.html' %}
+{% block title %}Worker Profile: {{ employee.name }}{% endblock %}
+
 {% block content %}
-<div class="card p-4 mx-auto shadow-sm" style="max-width: 900px;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold m-0 lang-text" data-en="Employee Profile" data-ar="ملف الموظف">Employee Profile: {{ employee.name }}</h3>
-        <div class="d-flex gap-2">
-            <button id="editToggleBtn" onclick="enableEditing()" class="btn btn-warning fw-bold px-3"><i class="bi bi-lock-fill me-1"></i> Enable Edit</button>
-            <a href="/employees/delete/{{ employee.id }}/" onclick="return confirm('Are you sure you want to permanently delete this employee?');" class="btn btn-danger fw-bold px-3 hidden-until-edit" style="display: none;"><i class="bi bi-trash-fill me-1"></i> Delete Worker</a>
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 950px;">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <div>
+            <h3 class="fw-bold m-0 lang-text" data-en="Worker Profile" data-ar="ملف العامل">{{ employee.name }}</h3>
+            <small class="text-muted">
+                Contracting Company: <strong>{{ company.name }}</strong> | 
+                Client / Project: <strong>{{ employee.client_project|default:employee.company_name|default:"General" }}</strong>
+            </small>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'employees_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Directory
+            </a>
+            <button type="button" class="btn btn-success btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#renewIqamaProfileModal">
+                <i class="bi bi-arrow-repeat me-1"></i> Renew Iqama
+            </button>
+            <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addExpenseProfileModal">
+                <i class="bi bi-plus-circle me-1"></i> + Record Spending
+            </button>
+            <button id="editToggleBtn" onclick="enableEditing()" class="btn btn-warning btn-sm fw-bold px-3">
+                <i class="bi bi-lock-fill me-1"></i> Enable Edit
+            </button>
+            <a href="{% url 'employee_delete' employee.id %}" onclick="return confirm('Are you sure you want to permanently delete this worker record?');" class="btn btn-danger btn-sm fw-bold px-3 hidden-until-edit" style="display: none;">
+                <i class="bi bi-trash-fill me-1"></i> Delete Worker
+            </a>
         </div>
     </div>
+
     <hr class="my-3 opacity-25">
+
     <div class="row g-4">
+        <!-- Left Column: Photo & Quick Financials -->
         <div class="col-md-4 text-center">
             {% if employee.photo %}
-                <img src="{{ employee.photo.url }}" class="img-fluid rounded-3 shadow mb-3 border border-secondary border-opacity-20" style="max-height: 220px; object-fit: cover;">
+                <img src="{{ employee.photo.url }}" class="img-fluid rounded-3 shadow mb-3 border" style="max-height: 220px; width: 100%; object-fit: cover;">
             {% else %}
-                <div class="p-5 rounded-3 text-muted border mb-3" style="background-color: var(--body-bg);">No Photo Uploaded</div>
+                <div class="p-5 rounded-3 text-muted border mb-3 bg-light d-flex flex-column align-items-center justify-content-center" style="min-height: 200px;">
+                    <i class="bi bi-person-circle fs-1 text-secondary mb-2"></i>
+                    <div>No Photo Uploaded</div>
+                </div>
             {% endif %}
 
-            <div class="card p-3 text-start hidden-until-edit shadow-sm" style="display: none; background-color: var(--body-bg);">
-                <h6 class="fw-bold text-primary mb-2 lang-text" data-en="Salary Increment (%)" data-ar="زيادة الراتب (%)">Salary Increment (%)</h6>
+            <!-- Client Deployment / Bench Status Card -->
+            <div class="card p-3 mb-3 text-start border {% if employee.deployment_status == 'deployed' %}border-success border-opacity-50 bg-success bg-opacity-10{% else %}border-warning border-opacity-50 bg-warning bg-opacity-10{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="small fw-bold text-uppercase text-dark">
+                        <i class="bi bi-briefcase-fill me-1"></i> Client Deployment
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-semibold dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Manage
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li>
+                                <a class="dropdown-item small" href="#" data-bs-toggle="modal" data-bs-target="#assignClientModal">
+                                    <i class="bi bi-box-arrow-in-right text-success me-2"></i> Deploy / Change Client
+                                </a>
+                            </li>
+                            {% if employee.deployment_status == 'deployed' %}
+                            <li>
+                                <a class="dropdown-item small text-danger" href="#" data-bs-toggle="modal" data-bs-target="#demobilizeModal">
+                                    <i class="bi bi-person-x text-danger me-2"></i> Demobilize (Move to Bench)
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                {% if employee.deployment_status == 'deployed' and employee.assigned_client %}
+                    <div class="fw-bold text-success fs-6">{{ employee.assigned_client.name }}</div>
+                    <div class="small text-muted mb-1">
+                        <i class="bi bi-geo-alt me-1"></i>{{ employee.client_project|default:employee.assigned_client.project_name|default:"Client Project Site" }}
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted border-top pt-1 mt-1">
+                        <span>Billed Rate:</span>
+                        <strong class="text-success">SAR {{ employee.receiving_amount }}</strong>
+                    </div>
+                    {% if employee.deployment_date %}
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>Deployed Since:</span>
+                            <span>{{ employee.deployment_date }}</span>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="fw-bold text-warning-emphasis">
+                        <i class="bi bi-exclamation-circle-fill text-warning me-1"></i> Unemployed / On Bench
+                    </div>
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                        Worker has no active client project. Monthly cost: <strong>SAR {{ employee.basic_salary }}</strong>.
+                    </small>
+                    {% if employee.unemployed_reason %}
+                        <small class="text-danger d-block mt-1" style="font-size: 11px;">
+                            <strong>Reason:</strong> {{ employee.unemployed_reason }}
+                        </small>
+                    {% endif %}
+                    <button type="button" class="btn btn-sm btn-success fw-bold w-100 mt-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#assignClientModal">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Deploy to Client Company
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Assigned Housing Card -->
+            <div class="card p-3 mb-3 text-start bg-light border">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="small fw-bold text-muted text-uppercase"><i class="bi bi-house-door me-1"></i> Housing Accommodation</div>
+                    <button type="button" class="btn btn-link p-0 text-primary small text-decoration-none hidden-until-edit" style="display: none;" data-bs-toggle="modal" data-bs-target="#changeHousingModal">
+                        <i class="bi bi-pencil-square"></i> Change
+                    </button>
+                </div>
+                {% if assigned_prop %}
+                    <div class="fw-bold text-primary">{{ assigned_prop.property.property_name }}</div>
+                    {% if assigned_prop.is_client_provided %}
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 mt-1">
+                            <i class="bi bi-shield-check me-1"></i> Client Provided (SAR 0.00)
+                        </span>
+                    {% else %}
+                        <small class="text-muted">Charge: SAR {{ assigned_prop.effective_charge }}</small>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted small">No accommodation assigned</span>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100 hidden-until-edit" style="display: none;" data-bs-toggle="modal" data-bs-target="#changeHousingModal">
+                        + Assign Accommodation
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Individual Contract Leave Entitlement & Terms -->
+            <div class="card p-3 mb-3 text-start bg-light border shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                    <span class="small fw-bold text-dark text-uppercase">
+                        <i class="bi bi-calendar-range-fill text-primary me-1"></i> Contract Leave
+                    </span>
+                    <span class="badge bg-primary bg-opacity-15 text-primary fw-bold">
+                        {{ employee.effective_annual_leave }} d/yr
+                    </span>
+                </div>
+
+                <div class="p-2 bg-white rounded border mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">{{ current_year }} Available:</span>
+                        <strong class="text-primary">{{ current_balance.remaining_annual_leave }} days</strong>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1" style="font-size: 11px;">
+                        <span class="text-muted">Accrued / Quota:</span>
+                        <span>{{ current_balance.accrued_balance }} days</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1" style="font-size: 11px;">
+                        <span class="text-muted">Annual Leave Used:</span>
+                        <span class="text-danger fw-semibold">{{ current_balance.used_balance }} days</span>
+                    </div>
+                    <div class="d-flex justify-content-between small" style="font-size: 11px;">
+                        <span class="text-muted">Sick / Emergency:</span>
+                        <span>{{ current_balance.sick_used }}d sick • {{ current_balance.emergency_used }}d emerg.</span>
+                    </div>
+                </div>
+
+                <div class="small text-muted mb-2" style="font-size: 11px;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Paid Sick Leave:</span>
+                        <span class="fw-semibold text-dark">{{ employee.effective_sick_leave }} days/yr</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Emergency Leave:</span>
+                        <span class="fw-semibold text-dark">{{ employee.effective_emergency_leave }} days/yr</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Carry Forward:</span>
+                        <span>Max {{ employee.effective_carry_forward }} days</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Flight Ticket:</span>
+                        <span class="fw-semibold text-info">{{ employee.get_contract_ticket_frequency_display }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Advance Leave:</span>
+                        <span>{% if employee.contract_allow_negative %}<span class="text-success fw-bold">Allowed ({{ employee.contract_negative_limit }}d)</span>{% else %}<span class="text-muted">Not Allowed</span>{% endif %}</span>
+                    </div>
+                </div>
+
+                {% if employee.leave_contract_notes %}
+                <div class="p-2 bg-warning-subtle text-dark rounded border mb-2" style="font-size: 11px;">
+                    <i class="bi bi-card-text me-1 text-warning-emphasis"></i>{{ employee.leave_contract_notes }}
+                </div>
+                {% endif %}
+
+                <button type="button" class="btn btn-outline-primary btn-sm w-100 fw-semibold" data-bs-toggle="modal" data-bs-target="#editLeaveContractModal">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Contract Leave Terms
+                </button>
+            </div>
+
+
+            <!-- Salary Increment Box -->
+            <div class="card p-3 text-start shadow-sm hidden-until-edit border-success" style="display: none;">
+                <h6 class="fw-bold text-success mb-2 lang-text" data-en="Apply Salary Increment (%)" data-ar="زيادة الراتب (%)">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Apply Increment (%)
+                </h6>
                 <form method="POST">
                     {% csrf_token %}
-                    <input type="number" step="0.01" name="increment_percentage" class="form-control form-control-sm mb-2" placeholder="e.g. 10" required>
-                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Apply Increase</button>
+                    <div class="input-group input-group-sm mb-2">
+                        <input type="number" step="0.01" name="increment_percentage" class="form-control" placeholder="e.g. 10%" required>
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">Calculate & Increase</button>
                 </form>
             </div>
         </div>
+
+        <!-- Right Column: Profile Form & Monthly Payment Tracker -->
         <div class="col-md-8">
+            <!-- Financial & Payroll Highlight Card -->
+            <div class="card p-3 mb-4 border rounded-3" style="background: linear-gradient(135deg, #f8fafc, #edf2f7);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-cash-stack text-success me-1"></i> Contract Financials & Profit Margin</span>
+                    <span class="badge bg-success bg-opacity-15 text-success fw-bold">+{{ employee.profit_margin }} SAR Margin ({{ employee.profit_margin_pct }}%)</span>
+                </div>
+                <div class="row g-2 text-center">
+                    <div class="col-sm-3 col-6">
+                        <div class="p-2 bg-white rounded-2 border">
+                            <div class="text-muted" style="font-size: 11px;">Basic Salary</div>
+                            <div class="fw-bold text-success fs-6">SAR {{ employee.basic_salary }}</div>
+                            <small class="text-muted" style="font-size: 10px;">Paid to Worker</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="p-2 bg-white rounded-2 border">
+                            <div class="text-muted" style="font-size: 11px;">Receiving Amount</div>
+                            <div class="fw-bold text-primary fs-6">SAR {{ employee.receiving_amount }}</div>
+                            <small class="text-muted" style="font-size: 10px;">Client Billing</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="p-2 bg-white rounded-2 border">
+                            <div class="text-muted" style="font-size: 11px;">Salary From Account</div>
+                            <div class="fw-semibold text-dark text-truncate small" title="{{ employee.salary_from_account }}">{{ employee.salary_from_account|default:"Primary WPS" }}</div>
+                            <small class="text-muted" style="font-size: 10px;">Originating Bank</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div class="p-2 bg-white rounded-2 border">
+                            <div class="text-muted" style="font-size: 11px;">Payment Company</div>
+                            <div class="fw-semibold text-dark text-truncate small" title="{{ employee.salary_payment_company }}">{{ employee.salary_payment_company|default:company.name }}</div>
+                            <small class="text-muted" style="font-size: 10px;">Disbursing Entity</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <fieldset id="formFieldset" disabled>
-                    <div class="row g-3">
-                        {% for field in form %}
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted mb-1">{{ field.label }}</label>
-                                {{ field }}
-                            </div>
-                        {% endfor %}
+                    <!-- Section 1: Personal & Identity -->
+                    <div class="small fw-bold text-primary text-uppercase mb-2 pb-1 border-bottom">
+                        <i class="bi bi-person-badge me-1"></i> 1. Personal & Identity
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-4 py-2 hidden-until-edit" style="display: none;">Save Changes</button>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.name.label }}</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.nationality.label }}</label>
+                            {{ form.nationality }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.iqama_number.label }}</label>
+                            {{ form.iqama_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.passport_number.label }}</label>
+                            {{ form.passport_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.phone_number.label }}</label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.photo.label }}</label>
+                            {{ form.photo }}
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Sponsorship & Assignment -->
+                    <div class="small fw-bold text-primary text-uppercase mb-2 pb-1 border-bottom mt-3">
+                        <i class="bi bi-briefcase me-1"></i> 2. Sponsorship & Site Assignment
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.position.label }}</label>
+                            {{ form.position }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.visa_status.label }}</label>
+                            {{ form.visa_status }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.assigned_client.label }}</label>
+                            {{ form.assigned_client }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.deployment_status.label }}</label>
+                            {{ form.deployment_status }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.client_project.label }}</label>
+                            {{ form.client_project }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.company_name.label }}</label>
+                            {{ form.company_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.kafeel_name.label }}</label>
+                            {{ form.kafeel_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-bold text-muted mb-0">{{ form.iqama_expiry.label }}</label>
+                                <button type="button" class="btn btn-link p-0 text-success fw-bold small text-decoration-none" data-bs-toggle="modal" data-bs-target="#renewIqamaProfileModal">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Renew Iqama
+                                </button>
+                            </div>
+                            {{ form.iqama_expiry }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.joining_date.label }}</label>
+                            {{ form.joining_date }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.transfer_dates.label }}</label>
+                            {{ form.transfer_dates }}
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Financial & Payroll Information -->
+                    <div class="small fw-bold text-success text-uppercase mb-2 pb-1 border-bottom mt-3">
+                        <i class="bi bi-cash-coin me-1"></i> 3. Financial & Payroll Contract Details
+                    </div>
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-success mb-1">
+                                    <i class="bi bi-cash me-1"></i> {{ form.basic_salary.label }}
+                                </label>
+                                {{ form.basic_salary }}
+                                <small class="text-muted d-block mt-1" style="font-size: 11px;">Monthly wage paid to the worker.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-primary mb-1">
+                                    <i class="bi bi-receipt me-1"></i> {{ form.receiving_amount.label }}
+                                </label>
+                                {{ form.receiving_amount }}
+                                <small class="text-muted d-block mt-1" style="font-size: 11px;">Monthly rate invoiced to contracting client.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">
+                                    <i class="bi bi-bank me-1"></i> {{ form.salary_from_account.label }}
+                                </label>
+                                {{ form.salary_from_account }}
+                                <small class="text-muted d-block mt-1" style="font-size: 11px;">Company bank IBAN or WPS account disbursing payroll.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">
+                                    <i class="bi bi-building me-1"></i> {{ form.salary_payment_company.label }}
+                                </label>
+                                {{ form.salary_payment_company }}
+                                <small class="text-muted d-block mt-1" style="font-size: 11px;">Entity name listed on salary payment advice.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Work Location & Notes -->
+                    <div class="small fw-bold text-secondary text-uppercase mb-2 pb-1 border-bottom mt-3">
+                        <i class="bi bi-geo me-1"></i> 4. Location & Additional Notes
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.working_place.label }}</label>
+                            {{ form.working_place }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.country.label }}</label>
+                            {{ form.country }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.additional_note.label }}</label>
+                            {{ form.additional_note }}
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Contractual Leave Terms -->
+                    <div class="small fw-bold text-primary text-uppercase mb-2 pb-1 border-bottom mt-4">
+                        <i class="bi bi-calendar-check me-1"></i> 5. Contractual Leave Entitlement & Terms
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-success mb-1">{{ form.contract_annual_leave.label }}</label>
+                            {{ form.contract_annual_leave }}
+                            <small class="text-muted d-block mt-1" style="font-size: 11px;">Committed annual leave days in employment contract.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_carry_forward.label }}</label>
+                            {{ form.contract_carry_forward }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_sick_leave.label }}</label>
+                            {{ form.contract_sick_leave }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_emergency_leave.label }}</label>
+                            {{ form.contract_emergency_leave }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_ticket_frequency.label }}</label>
+                            {{ form.contract_ticket_frequency }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.contract_negative_limit.label }}</label>
+                            {{ form.contract_negative_limit }}
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                {{ form.contract_allow_negative }}
+                                <label class="form-check-label small fw-bold text-dark ms-1" for="{{ form.contract_allow_negative.id_for_label }}">
+                                    Allow Advance Leave (Negative Balance)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-muted mb-1">{{ form.leave_contract_notes.label }}</label>
+                            {{ form.leave_contract_notes }}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold mt-4 py-2 hidden-until-edit shadow-sm" style="display: none;">
+                        <i class="bi bi-check2-circle me-1"></i> Save Changes to Worker
+                    </button>
                 </fieldset>
             </form>
 
             <hr class="my-4 opacity-25">
-            <h5 class="fw-bold mb-3 lang-text" data-en="Monthly Salary Payment Tracker" data-ar="متابعة دفع الراتب الشهري">Monthly Salary Payment Tracker</h5>
-            <div class="row g-2">
+
+            <!-- Monthly Salary Tracker -->
+            <h5 class="fw-bold mb-2 lang-text" data-en="Monthly Salary Payment Tracker" data-ar="متابعة دفع الراتب الشهري">
+                <i class="bi bi-cash-stack text-success me-2"></i>Monthly Salary Payment Tracker ({{ current_balance.year|default:2026 }})
+            </h5>
+            <small class="text-muted d-block mb-3">Click on any month to confirm salary disbursement for this worker.</small>
+
+            <div class="row g-2 mb-4">
+                {% if employee.total_advances_pending > 0 %}
+                    <div class="col-12">
+                        <div class="alert alert-warning py-2 px-3 mb-2 d-flex align-items-center justify-content-between">
+                            <div class="small">
+                                <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                                <strong>Pending Salary Advance:</strong> SAR {{ employee.total_advances_pending }} to be deducted from monthly disbursement.
+                            </div>
+                            <span class="badge bg-danger">Deduction Pending</span>
+                        </div>
+                    </div>
+                {% endif %}
                 {% for m in months_status %}
                     <div class="col-6 col-sm-4 col-md-3">
                         <form method="POST" class="m-0">
@@ -58,6 +476,519 @@
                     </div>
                 {% endfor %}
             </div>
+
+            <!-- Spending & Expense Tracker Section -->
+            <hr class="my-4 opacity-25">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div>
+                    <h5 class="fw-bold m-0 lang-text" data-en="Spending & Expense Tracker" data-ar="سجل المصاريف والنفقات">
+                        <i class="bi bi-wallet2 text-primary me-2"></i>Spending & Cost Tracker
+                    </h5>
+                    <small class="text-muted">Track all extra costs: Iqama renewal, salary advances, transport, sick leave, vacation/tickets, accruals.</small>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addExpenseProfileModal">
+                    <i class="bi bi-plus-circle me-1"></i> + Record Spending
+                </button>
+            </div>
+
+            <!-- Summary KPI Badges -->
+            <div class="row g-2 mb-3">
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Total Spending</small>
+                        <span class="fw-bold text-dark fs-6">SAR {{ employee.total_spending }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Pending Advances</small>
+                        <span class="fw-bold text-danger fs-6">SAR {{ employee.total_advances_pending }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Iqama Renewals</small>
+                        <span class="fw-bold text-primary fs-6">SAR {{ employee.iqama_renewal_total }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-3 col-6">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Transport & Travel</small>
+                        <span class="fw-bold text-info fs-6">SAR {{ employee.transport_total }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-sm-4 col-12">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Sick Leave & Medical</small>
+                        <span class="fw-bold text-warning fs-6">SAR {{ employee.sick_leave_total }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-4 col-6">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Vacation / Tickets</small>
+                        <span class="fw-bold text-secondary fs-6">SAR {{ employee.vacation_total }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-4 col-6">
+                    <div class="p-2 bg-light rounded border text-center">
+                        <small class="text-muted d-block" style="font-size: 11px;">Accrual / EOSB</small>
+                        <span class="fw-bold text-success fs-6">SAR {{ employee.accrual_total }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spending Table -->
+            <div class="table-responsive border rounded-3 mb-4">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Amount (SAR)</th>
+                            <th>Deductible?</th>
+                            <th>Notes</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for exp in expenses %}
+                        <tr>
+                            <td class="text-nowrap">{{ exp.expense_date }}</td>
+                            <td>
+                                {% if exp.expense_type == 'iqama_renewal' %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                        <i class="bi bi-shield-check me-1"></i> Iqama Renewal
+                                    </span>
+                                {% elif exp.expense_type == 'advance_salary' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                                        <i class="bi bi-cash me-1"></i> Salary Advance
+                                    </span>
+                                {% elif exp.expense_type == 'transport' %}
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                                        <i class="bi bi-truck me-1"></i> Transport
+                                    </span>
+                                {% elif exp.expense_type == 'sick_leave' %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                                        <i class="bi bi-heart-pulse me-1"></i> Sick Leave
+                                    </span>
+                                {% elif exp.expense_type == 'vacation' %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                                        <i class="bi bi-airplane me-1"></i> Vacation / Ticket
+                                    </span>
+                                {% elif exp.expense_type == 'accrual' %}
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                        <i class="bi bi-piggy-bank me-1"></i> Accrual / EOSB
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-dark bg-opacity-10 text-dark border">Other</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">
+                                {% if exp.amount == 0 %}
+                                    <span class="text-success">SAR 0.00 (Client-Paid)</span>
+                                {% else %}
+                                    SAR {{ exp.amount }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if exp.deduct_from_salary %}
+                                    {% if exp.is_settled %}
+                                        <span class="badge bg-success">Settled</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Deduct from Salary</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Company Cost</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ exp.notes|default:"-" }}</td>
+                            <td class="text-end text-nowrap">
+                                {% if exp.deduct_from_salary %}
+                                <a href="{% url 'expense_toggle_settle' exp.id %}" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 11px;" title="Toggle Settled Status">
+                                    {% if exp.is_settled %}Mark Pending{% else %}Mark Settled{% endif %}
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'expense_delete' exp.id %}" onclick="return confirm('Delete this spending record?');" class="text-danger ms-1 p-1" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="bi bi-receipt fs-2 d-block mb-1 text-secondary"></i>
+                                No spending or expense records logged for this worker.
+                                <br>
+                                <button type="button" class="btn btn-link btn-sm text-decoration-none mt-1" data-bs-toggle="modal" data-bs-target="#addExpenseProfileModal">
+                                    + Record First Spending Entry
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Payment Audit Log -->
+            {% if employee.payment_history %}
+                <div class="card p-3 bg-light border">
+                    <div class="small fw-bold text-muted text-uppercase mb-2"><i class="bi bi-clock-history me-1"></i> Payment & Salary Change Log</div>
+                    <pre class="small text-muted font-monospace m-0" style="white-space: pre-wrap; max-height: 120px; overflow-y: auto;">{{ employee.payment_history }}</pre>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal 1: Renew Iqama -->
+<div class="modal fade" id="renewIqamaProfileModal" tabindex="-1" aria-labelledby="renewIqamaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'iqama_renew' employee.id %}">
+                {% csrf_token %}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="renewIqamaLabel">
+                        <i class="bi bi-shield-check me-2"></i> Renew Iqama: {{ employee.name }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="p-2 mb-3 bg-light rounded border d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted d-block">Iqama Number</small>
+                            <span class="font-monospace fw-bold">{{ employee.iqama_number }}</span>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block">Current Expiry</small>
+                            <span class="badge bg-secondary">{{ employee.iqama_expiry }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">New Iqama Expiry Date *</label>
+                        <input type="date" name="new_expiry" value="{{ default_new_expiry }}" class="form-control" required>
+                        <small class="text-muted" style="font-size: 11px;">Standard 1-year or custom renewal date.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Renewal Cost / Fee (SAR) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">SAR</span>
+                            <input type="number" step="0.01" min="0" name="renewal_cost" value="0.00" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <small class="text-success fw-semibold" style="font-size: 11px;">
+                            <i class="bi bi-info-circle me-1"></i>Enter manual amount (e.g. 650, 9500). Enter <strong>0</strong> if covered by client company.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Payment Notes / Reference (Optional)</label>
+                        <input type="text" name="notes" class="form-control" placeholder="e.g. Jawazat fee + Maktab Amal work permit">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Confirm & Log Renewal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Record Spending / Advance -->
+<div class="modal fade" id="addExpenseProfileModal" tabindex="-1" aria-labelledby="addExpenseLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'expense_add' employee.id %}">
+                {% csrf_token %}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="addExpenseLabel">
+                        <i class="bi bi-wallet2 me-2"></i> Record Spending: {{ employee.name }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Spending Category *</label>
+                        <select name="expense_type" class="form-select" id="profileExpenseTypeSelect">
+                            <option value="advance_salary">Advance Salary / Loan (سلفة راتب)</option>
+                            <option value="transport">Transportation / Travel (مواصلات وترحيل)</option>
+                            <option value="sick_leave">Sick Leave / Medical (إجازة مرضية وعلاج)</option>
+                            <option value="vacation">Vacation / Exit-Reentry / Ticket (تذاكر وتأشيرات)</option>
+                            <option value="accrual">Accrual / EOSB Gratuity (مستحقات ونهاية خدمة)</option>
+                            <option value="iqama_renewal">Iqama Renewal Fee (رسوم تجديد الإقامة)</option>
+                            <option value="other">Other Expense (مصاريف أخرى)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Amount (SAR) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">SAR</span>
+                            <input type="number" step="0.01" min="0" name="amount" value="0.00" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <small class="text-muted" style="font-size: 11px;">Cost in SAR. Enter <strong>0</strong> if provided free by client company.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Date of Expense *</label>
+                        <input type="date" name="expense_date" value="{% now 'Y-m-d' %}" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Description / Notes</label>
+                        <input type="text" name="notes" class="form-control" placeholder="e.g. Advance cash, bus ticket, medical clinic...">
+                    </div>
+
+                    <div class="form-check p-3 bg-light rounded border mb-2">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="deduct_from_salary" id="profileDeductCheckbox" checked>
+                        <label class="form-check-label small fw-bold text-dark" for="profileDeductCheckbox">
+                            Deduct from monthly salary payment
+                        </label>
+                        <small class="text-muted d-block" style="font-size: 11px;">Recommended for Advance Salary / personal loans.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm">
+                        <i class="bi bi-save me-1"></i> Save Spending Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 3: Change Housing Accommodation -->
+<div class="modal fade" id="changeHousingModal" tabindex="-1" aria-labelledby="changeHousingLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="update_property_assignment" value="1">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title fw-bold" id="changeHousingLabel">
+                        <i class="bi bi-house-door me-2"></i> Assign Housing: {{ employee.name }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Accommodation Camp / Property</label>
+                        <select name="property_id" class="form-select">
+                            <option value="">-- No Accommodation Assigned --</option>
+                            {% for p in properties %}
+                                <option value="{{ p.id }}" {% if assigned_prop and assigned_prop.property.id == p.id %}selected{% endif %}>
+                                    {{ p.property_name }} {% if p.charge_amount == 0 %}(Client Provided - SAR 0.00){% else %}(SAR {{ p.charge_amount }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Custom Worker Housing Charge (SAR)</label>
+                        <input type="number" step="0.01" min="0" name="custom_charge" value="{% if assigned_prop and assigned_prop.custom_charge is not None %}{{ assigned_prop.custom_charge }}{% endif %}" class="form-control" placeholder="Default, or 0.00 if Client Provided">
+                        <small class="text-success fw-semibold" style="font-size: 11px;">
+                            <i class="bi bi-info-circle me-1"></i>Enter <strong>0.00</strong> if this worker's housing is covered free by the client company.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info text-white fw-bold px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Update Housing
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 4: Assign / Deploy to Client Company -->
+<div class="modal fade" id="assignClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'employee_assign_client' employee.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="assign">
+                <input type="hidden" name="next" value="{% url 'employee_detail' employee.id %}">
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-briefcase-fill me-2"></i> Deploy Worker to Client
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-light border small mb-3">
+                        Deploying: <strong>{{ employee.name }}</strong> ({{ employee.position }})<br>
+                        Current Billing Rate: <strong>SAR {{ employee.receiving_amount }}</strong>/mo
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Select Client Company *</label>
+                        <select name="client_id" class="form-select" required>
+                            <option value="">-- Choose Client Company --</option>
+                            {% for c in clients %}
+                                <option value="{{ c.id }}" {% if employee.assigned_client_id == c.id %}selected{% endif %}>
+                                    {{ c.name }} {% if c.project_name %}({{ c.project_name }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Deployment Start Date *</label>
+                        <input type="date" name="deployment_date" value="{% if employee.deployment_date %}{{ employee.deployment_date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Project / Site Location</label>
+                        <input type="text" name="project_site" value="{{ employee.client_project|default:'' }}" class="form-control" placeholder="e.g. Riyadh Metro Line 3, NEOM Spine Site">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Deploy Worker
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 5: Demobilize / Move to Bench (Lost Job) -->
+<div class="modal fade" id="demobilizeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'employee_assign_client' employee.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="demobilize">
+                <input type="hidden" name="next" value="{% url 'employee_detail' employee.id %}">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-person-x-fill me-2"></i> Demobilize to Unemployed / Bench Pool
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning small mb-3">
+                        <strong>Worker Demobilization:</strong><br>
+                        {{ employee.name }} will be unassigned from <strong>{{ employee.assigned_client.name|default:"client site" }}</strong> and moved to the <strong>Unemployed / Bench Pool</strong> awaiting placement.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Reason for Demobilization / Job Loss *</label>
+                        <input type="text" name="reason" class="form-control" placeholder="e.g. Client finished project contract, client cut headcount, site closed" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Demobilization Date *</label>
+                        <input type="date" name="unemployed_date" value="{% now 'Y-m-d' %}" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold px-4">
+                        <i class="bi bi-person-dash me-1"></i> Confirm Demobilization
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 6: Edit Individual Contract Leave Terms -->
+<div class="modal fade" id="editLeaveContractModal" tabindex="-1" aria-labelledby="editLeaveContractLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'employee_leave_contract_edit' employee.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'employee_detail' employee.id %}">
+                <div class="modal-header bg-primary text-white">
+                    <div>
+                        <h5 class="modal-title fw-bold m-0" id="editLeaveContractLabel">
+                            <i class="bi bi-pencil-square me-2"></i>Edit Contract Leave Entitlement & Terms
+                        </h5>
+                        <small class="text-white-50">Worker: {{ employee.name }} (Iqama: {{ employee.iqama_number }})</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-light border mb-3 small">
+                        <i class="bi bi-info-circle-fill text-primary me-1"></i>
+                        Leave rules are based on this worker's individual employment contract. Changing these terms allows accommodating specific agreements (e.g. 30 days for engineers, 42 days for 2-year cycles).
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-success mb-1">Yearly Annual Leave (Days/Year) *</label>
+                            {{ leave_contract_form.contract_annual_leave }}
+                            <small class="text-muted" style="font-size: 11px;">Standard is 21 days (Saudi Labor Law), 30 days for senior/engineers.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Carry Forward Limit (Days)</label>
+                            {{ leave_contract_form.contract_carry_forward }}
+                            <small class="text-muted" style="font-size: 11px;">Max unused days rolling into next year.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Paid Sick Leave Allowed / Year (Days)</label>
+                            {{ leave_contract_form.contract_sick_leave }}
+                            <small class="text-muted" style="font-size: 11px;">Contractual paid sick leave allocation.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Emergency Leave Allowed / Year (Days)</label>
+                            {{ leave_contract_form.contract_emergency_leave }}
+                            <small class="text-muted" style="font-size: 11px;">Emergency or casual days allowed per year.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Flight Ticket Entitlement</label>
+                            {{ leave_contract_form.contract_ticket_frequency }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Max Advance / Negative Limit (Days)</label>
+                            {{ leave_contract_form.contract_negative_limit }}
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                {{ leave_contract_form.contract_allow_negative }}
+                                <label class="form-check-label small fw-bold text-dark ms-1" for="{{ leave_contract_form.contract_allow_negative.id_for_label }}">
+                                    Allow Advance Leave (Negative Balance) for this worker
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-muted mb-1">Contractual Stipulations & Notes</label>
+                            {{ leave_contract_form.leave_contract_notes }}
+                        </div>
+                        <div class="col-md-12">
+                            <div class="p-3 bg-light rounded-2 border">
+                                <div class="form-check">
+                                    {{ leave_contract_form.sync_leave_balance }}
+                                    <label class="form-check-label small fw-bold text-primary ms-1" for="{{ leave_contract_form.sync_leave_balance.id_for_label }}">
+                                        Sync {{ current_year }} Accrued Balance to New Contract Entitlement
+                                    </label>
+                                    <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                                        Immediately sets this worker's {{ current_year }} accrued leave quota to match the newly entered contract annual leave days.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Save Contract Terms
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

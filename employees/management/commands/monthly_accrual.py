@@ -3,8 +3,10 @@ from django.utils import timezone
 from employees.models import Employee, LeaveBalance, LeavePolicy
 from datetime import datetime
 
+from decimal import Decimal
+
 class Command(BaseCommand):
-    help = 'Run monthly leave accrual for all employees'
+    help = 'Run monthly leave accrual for all employees based on individual contract entitlement'
 
     def handle(self, *args, **options):
         today = timezone.now().date()
@@ -13,12 +15,10 @@ class Command(BaseCommand):
 
         employees = Employee.objects.all()
         for emp in employees:
-            # Get the leave policy for this employee's company
+            # Use employee's agreed individual contract leave; fall back to company policy template
             policy = LeavePolicy.objects.filter(company=emp.client_company).first()
-            if not policy:
-                continue
-            yearly = policy.yearly_leave
-            monthly_accrual = yearly / 12
+            yearly = emp.effective_annual_leave if emp.contract_annual_leave is not None else (policy.yearly_leave if policy else Decimal('21.00'))
+            monthly_accrual = Decimal(str(yearly)) / Decimal('12')
 
             # Pro-rata: if joining in current year, count months from joining
             join_date = emp.joining_date

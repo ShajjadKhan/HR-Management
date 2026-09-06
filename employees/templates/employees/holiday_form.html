@@ -1,10 +1,28 @@
 {% extends 'employees/base.html' %}
+{% block title %}Add Holiday - {{ company.name }}{% endblock %}
+
 {% block content %}
-<h2>Add Holiday</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Save</button>
-    <a href="{% url 'holiday_list' %}" class="btn btn-secondary">Cancel</a>
-</form>
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 500px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold m-0"><i class="bi bi-calendar-plus text-primary me-2"></i>Add Holiday</h4>
+        <a href="{% url 'holiday_list' %}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+    </div>
+    <small class="text-muted d-block mb-3">Company: <strong>{{ company.name }}</strong></small>
+    <hr class="my-2 opacity-25">
+
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Holiday Date *</label>
+            {{ form.holiday_date }}
+        </div>
+        <div class="mb-4">
+            <label class="form-label small fw-bold text-muted">Holiday Name (e.g. Saudi National Day, Eid Al-Fitr) *</label>
+            {{ form.name }}
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+            <i class="bi bi-save me-1"></i> Save Holiday
+        </button>
+    </form>
+</div>
 {% endblock %}

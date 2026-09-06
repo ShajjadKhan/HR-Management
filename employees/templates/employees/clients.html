@@ -1,0 +1,397 @@
+{% extends 'employees/base.html' %}
+{% block title %}Client Companies & Deployment Tracker - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="Clients & Project Deployments" data-ar="العملاء والمشاريع والتشغيل">
+                <i class="bi bi-briefcase-fill text-primary me-2"></i>Clients & Project Deployments
+            </h4>
+            <small class="text-muted">
+                Contracting management for: <strong>{{ company.name }}</strong>
+            </small>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'employees_list' %}" class="btn btn-outline-secondary btn-sm fw-semibold">
+                <i class="bi bi-people me-1"></i> All Workers
+            </a>
+            <a href="{% url 'client_add' %}" class="btn btn-primary btn-sm fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> + Register Client Company
+            </a>
+        </div>
+    </div>
+
+    <!-- Commercial & Deployment KPI Cards -->
+    <div class="row g-3 mb-4">
+        <!-- 1. Active Clients -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-primary border-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Active Clients</div>
+                        <div class="fs-3 fw-bold text-dark mt-1">{{ clients.count }}</div>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                        <i class="bi bi-buildings fs-4"></i>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">Companies contracting manpower</div>
+            </div>
+        </div>
+
+        <!-- 2. Deployed Workers -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-success border-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Deployed on Projects</div>
+                        <div class="fs-3 fw-bold text-success mt-1">{{ deployed_workers_count }}</div>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success rounded-3 p-3">
+                        <i class="bi bi-person-check-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="small text-success fw-semibold mt-2">
+                    <i class="bi bi-cash me-1"></i>SAR {{ total_deployed_revenue|floatformat:2 }} billed/mo
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Unemployed / Bench Pool -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-warning border-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Unemployed / Bench Pool</div>
+                        <div class="fs-3 fw-bold text-warning mt-1">{{ unemployed_count }}</div>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3">
+                        <i class="bi bi-person-x-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="small text-danger fw-semibold mt-2">
+                    <i class="bi bi-fire me-1"></i>SAR {{ total_bench_burn|floatformat:2 }} salary burn/mo
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Deployment Rate -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-info border-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase">Total Workforce</div>
+                        <div class="fs-3 fw-bold text-info mt-1">{{ company.worker_count }}</div>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info rounded-3 p-3">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">
+                    Limit: {{ company.max_employees }} worker slots
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs (Clients vs Bench Pool) -->
+    <ul class="nav nav-pills mb-4 border-bottom pb-2 gap-2" id="clientTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if active_tab != 'bench' %}active fw-bold{% endif %}" href="?tab=clients">
+                <i class="bi bi-buildings me-1"></i> Client Companies & Sites ({{ clients.count }})
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if active_tab == 'bench' %}active fw-bold bg-warning text-dark{% else %}text-danger fw-semibold{% endif %}" href="?tab=bench">
+                <i class="bi bi-person-dash me-1"></i> Unemployed / Bench Pool
+                {% if unemployed_count > 0 %}
+                    <span class="badge {% if active_tab == 'bench' %}bg-dark text-white{% else %}bg-danger text-white{% endif %} ms-1">{{ unemployed_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+
+    <!-- TAB 1: CLIENT COMPANIES DIRECTORY -->
+    {% if active_tab != 'bench' %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="lang-text" data-en="Client Company" data-ar="شركة العميل">Client Company</th>
+                    <th class="lang-text" data-en="Project / Location" data-ar="المشروع والموقع">Project & Location</th>
+                    <th class="lang-text" data-en="Contact Person" data-ar="جهة الاتصال">Contact Person</th>
+                    <th class="lang-text" data-en="Active Workers" data-ar="العمال المسكنون">Deployed Workers</th>
+                    <th class="lang-text" data-en="Monthly Invoicing" data-ar="الفوترة الشهرية">Monthly Billing (SAR)</th>
+                    <th class="lang-text" data-en="Status" data-ar="الحالة">Status</th>
+                    <th class="text-end lang-text" data-en="Actions" data-ar="الإجراءات">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for client in clients %}
+                <tr>
+                    <!-- Client Name -->
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                <i class="bi bi-briefcase"></i>
+                            </div>
+                            <div>
+                                <a href="{% url 'client_detail' client.id %}" class="fw-bold text-dark text-decoration-none d-block">
+                                    {{ client.name }}
+                                </a>
+                                {% if client.contract_number %}
+                                    <small class="text-muted" style="font-size: 11px;">Ref: {{ client.contract_number }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Project Site & City -->
+                    <td>
+                        <div>
+                            <span class="fw-semibold text-dark">{{ client.project_name|default:"General Supply Agreement" }}</span>
+                            {% if client.project_location %}
+                                <small class="text-muted d-block" style="font-size: 11px;">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ client.project_location }}
+                                </small>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <!-- Contact -->
+                    <td>
+                        {% if client.contact_person %}
+                            <div class="fw-semibold small text-dark">{{ client.contact_person }}</div>
+                        {% endif %}
+                        {% if client.phone %}
+                            <small class="text-muted d-block" style="font-size: 11px;"><i class="bi bi-telephone me-1"></i>{{ client.phone }}</small>
+                        {% endif %}
+                    </td>
+
+                    <!-- Deployed Workers Count -->
+                    <td>
+                        <a href="{% url 'employees_list' %}?client={{ client.id }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 text-decoration-none">
+                            <i class="bi bi-people-fill me-1"></i> {{ client.deployed_workers_count }} Worker(s)
+                        </a>
+                    </td>
+
+                    <!-- Billing Revenue -->
+                    <td>
+                        <div class="fw-bold text-success">
+                            SAR {{ client.total_monthly_billing|floatformat:2 }}
+                        </div>
+                        <small class="text-muted" style="font-size: 11px;">Gross Margin: SAR {{ client.total_gross_margin|floatformat:2 }}</small>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                        {% if client.status == 'active' %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Active</span>
+                        {% elif client.status == 'completed' %}
+                            <span class="badge bg-secondary bg-opacity-10 text-dark border">Completed</span>
+                        {% else %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning">On Hold</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'client_detail' client.id %}" class="btn btn-outline-primary" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'client_edit' client.id %}" class="btn btn-outline-warning" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'client_delete' client.id %}" class="btn btn-outline-danger" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted bg-light rounded-3">
+                        <i class="bi bi-buildings fs-1 d-block mb-2 text-secondary"></i>
+                        <h5>No client companies registered yet.</h5>
+                        <p class="small text-muted mb-3">Register your client companies (contractors, main contractors, sites) to assign workers and track project deployment.</p>
+                        <a href="{% url 'client_add' %}" class="btn btn-primary btn-sm fw-bold">
+                            <i class="bi bi-plus-circle me-1"></i> + Register First Client
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+
+    <!-- TAB 2: UNEMPLOYED / BENCH WORKERS POOL -->
+    {% if active_tab == 'bench' %}
+    <div>
+        <!-- Notice Callout -->
+        <div class="alert alert-warning border-warning border-opacity-25 shadow-sm d-flex align-items-start gap-3 mb-4 p-3 rounded-3">
+            <i class="bi bi-exclamation-triangle-fill text-warning fs-3 mt-1"></i>
+            <div>
+                <h6 class="fw-bold mb-1">Unemployed / Bench Workers Pool (عمالة بدون مشروع / على قائمة الانتظار)</h6>
+                <p class="small mb-1">
+                    These <strong>{{ unemployed_count }}</strong> workers are currently not deployed to any client company. 
+                    They continue to incur basic salary expenses (<strong>SAR {{ total_bench_burn|floatformat:2 }}/month</strong>) without generating client billing revenue.
+                </p>
+                <small class="text-muted">Click <strong>"Deploy to Client"</strong> to assign any bench worker to an active client project.</small>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="lang-text" data-en="Worker Name" data-ar="اسم العامل">Worker</th>
+                        <th class="lang-text" data-en="Trade / Profession" data-ar="المهنة">Designation</th>
+                        <th class="lang-text" data-en="Iqama / Sponsor" data-ar="الإقامة">Iqama & Sponsor</th>
+                        <th class="lang-text" data-en="Basic Salary (Cost)" data-ar="الراتب الأساسي">Idle Salary Cost</th>
+                        <th class="lang-text" data-en="Idle Since / Reason" data-ar="تاريخ وسبب التوقف">Demobilization / Job Loss Reason</th>
+                        <th class="text-end lang-text" data-en="Deploy Action" data-ar="إجراء التسكين">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for worker in unemployed_workers %}
+                    <tr>
+                        <!-- Worker -->
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if worker.photo %}
+                                    <img src="{{ worker.photo.url }}" class="rounded-circle border" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-warning bg-opacity-10 text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                        {{ worker.name|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <a href="{% url 'employee_detail' worker.id %}" class="fw-bold text-dark text-decoration-none d-block">
+                                        {{ worker.name }}
+                                    </a>
+                                    <small class="text-muted">{{ worker.nationality|default:"Worker" }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Trade -->
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-10 text-dark border">{{ worker.position }}</span>
+                        </td>
+
+                        <!-- Iqama -->
+                        <td>
+                            <div class="font-monospace fw-semibold small">{{ worker.iqama_number }}</div>
+                            {% if worker.kafeel_name %}
+                                <small class="text-muted d-block" style="font-size: 11px;">{{ worker.kafeel_name }}</small>
+                            {% endif %}
+                        </td>
+
+                        <!-- Idle Salary Burn Cost -->
+                        <td>
+                            <span class="fw-bold text-danger">SAR {{ worker.basic_salary }}</span>
+                            <small class="text-muted d-block" style="font-size: 11px;">cost/mo (0 revenue)</small>
+                        </td>
+
+                        <!-- Idle Date & Reason -->
+                        <td>
+                            <div class="text-dark small fw-semibold">
+                                <i class="bi bi-clock-history me-1 text-secondary"></i>
+                                {% if worker.unemployed_date %}
+                                    Since {{ worker.unemployed_date }}
+                                {% else %}
+                                    Awaiting initial placement
+                                {% endif %}
+                            </div>
+                            <small class="text-muted d-block" style="font-size: 11px;">
+                                {% if worker.unemployed_reason %}
+                                    {{ worker.unemployed_reason }}
+                                {% else %}
+                                    Newly added or returned from contract
+                                {% endif %}
+                            </small>
+                        </td>
+
+                        <!-- Deploy Button -->
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-success fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#deployModal{{ worker.id }}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Deploy to Client
+                            </button>
+
+                            <!-- Deploy Worker Modal -->
+                            <div class="modal fade text-start" id="deployModal{{ worker.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="post" action="{% url 'employee_assign_client' worker.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="assign">
+                                            <input type="hidden" name="next" value="{% url 'clients_list' %}?tab=bench">
+
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title fw-bold">
+                                                    <i class="bi bi-building-add me-2"></i> Deploy {{ worker.name }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <div class="alert alert-light border small mb-3">
+                                                    Worker: <strong>{{ worker.name }}</strong> ({{ worker.position }})<br>
+                                                    Current Status: <span class="badge bg-warning text-dark">Unemployed / Bench</span>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold text-muted">Select Client Company *</label>
+                                                    <select name="client_id" class="form-select" required>
+                                                        <option value="">-- Choose Client Company --</option>
+                                                        {% for c in clients %}
+                                                            <option value="{{ c.id }}">{{ c.name }} ({{ c.project_name|default:"Project" }})</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold text-muted">Deployment Start Date *</label>
+                                                    <input type="date" name="deployment_date" value="{% now 'Y-m-d' %}" class="form-control" required>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold text-muted">Work / Project Site (Optional)</label>
+                                                    <input type="text" name="project_site" class="form-control" placeholder="e.g. Substation 3, Gate 4, NEOM Camp">
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer bg-light">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success fw-bold px-4">
+                                                    <i class="bi bi-check2-circle me-1"></i> Deploy Worker
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted bg-light rounded-3">
+                            <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
+                            <h5 class="text-success fw-bold">Zero Bench! All workers are actively deployed.</h5>
+                            <p class="small text-muted mb-0">Every worker in <strong>{{ company.name }}</strong> is currently assigned to an active client project.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

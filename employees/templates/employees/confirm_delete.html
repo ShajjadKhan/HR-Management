@@ -1,12 +1,23 @@
 {% extends 'employees/base.html' %}
+{% block title %}Confirm Deletion - {{ object }}{% endblock %}
+
 {% block content %}
-<div class="alert alert-danger">
-    <h4>Delete {{ type }}</h4>
-    <p>Are you sure you want to delete "{{ object }}"?</p>
-    <form method="post">
+<div class="card p-4 mx-auto shadow-sm border-danger" style="max-width: 500px;">
+    <div class="text-center mb-3">
+        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex p-3 fs-2 mb-2">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h4 class="fw-bold text-danger">Permanently Delete {{ type }}?</h4>
+        <p class="text-muted">
+            Are you sure you want to delete <strong>"{{ object }}"</strong>? This action cannot be undone.
+        </p>
+    </div>
+    <form method="post" class="d-flex gap-2">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Yes, Delete</button>
-        <a href="javascript:history.back()" class="btn btn-secondary">Cancel</a>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary flex-grow-1">Cancel</a>
+        <button type="submit" class="btn btn-danger flex-grow-1 fw-bold">
+            <i class="bi bi-trash-fill me-1"></i> Yes, Delete Permanently
+        </button>
     </form>
 </div>
 {% endblock %}

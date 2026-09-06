@@ -1,14 +1,30 @@
 {% extends 'employees/base.html' %}
+{% block title %}Confirm Salary Payment - {{ employee.name }}{% endblock %}
+
 {% block content %}
-<div class="card p-4">
-    <h3>Confirm Salary Payment</h3>
-    <p><strong>Employee:</strong> {{ employee.name }}</p>
-    <p><strong>Amount:</strong> SAR {{ employee.basic_salary }}</p>
-    <p>This will mark the salary as paid and log the date.</p>
-    <form method="post">
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 500px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold m-0"><i class="bi bi-cash-stack text-success me-2"></i>Confirm Salary Payment</h4>
+        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+    </div>
+    <hr class="my-2 opacity-25">
+
+    <div class="bg-light p-3 rounded-3 my-3 border text-center">
+        <div class="small text-muted text-uppercase fw-bold">Worker:</div>
+        <h5 class="fw-bold mb-2">{{ employee.name }}</h5>
+        <div class="small text-muted text-uppercase fw-bold">Basic Salary:</div>
+        <h3 class="fw-bold text-success">SAR {{ employee.basic_salary }}</h3>
+        <small class="text-muted d-block mt-2">
+            Confirming this will mark the worker's salary as paid and record a timestamped audit log.
+        </small>
+    </div>
+
+    <form method="post" class="d-flex gap-2">
         {% csrf_token %}
-        <button type="submit" class="btn btn-success">✅ Confirm Payment</button>
-        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-outline-secondary flex-grow-1">Cancel</a>
+        <button type="submit" class="btn btn-success flex-grow-1 fw-bold">
+            <i class="bi bi-check-circle-fill me-1"></i> Confirm Payment
+        </button>
     </form>
 </div>
 {% endblock %}

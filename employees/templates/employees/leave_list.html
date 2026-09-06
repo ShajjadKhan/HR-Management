@@ -1,25 +1,93 @@
 {% extends 'employees/base.html' %}
+{% block title %}Leave Requests - {{ company.name }}{% endblock %}
+
 {% block content %}
-<h2>Leave Requests</h2>
-<table class="table">
-    <thead><tr><th>Type</th><th>Start</th><th>End</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for leave in leaves %}
-        <tr>
-            <td>{{ leave.get_leave_type_display }}</td>
-            <td>{{ leave.start_date }}</td>
-            <td>{{ leave.end_date }}</td>
-            <td>{{ leave.status }}</td>
-            <td>
-                {% if leave.status == 'pending' and request.user.is_staff %}
-                    <a href="{% url 'leave_approve' leave.id %}" class="btn btn-sm btn-primary">Review</a>
-                {% endif %}
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No leave requests.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
-<a href="{% url 'leave_apply' %}" class="btn btn-success">Apply New Leave</a>
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="Employee Leave Requests" data-ar="طلبات الإجازة">Employee Leave Requests</h4>
+            <small class="text-muted">Managed for: <strong>{{ company.name }}</strong></small>
+        </div>
+        <a href="{% url 'leave_apply' %}" class="btn btn-primary btn-sm fw-bold">
+            <i class="bi bi-calendar-plus me-1"></i> + Apply Leave Request
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Worker Name</th>
+                    <th>Leave Type</th>
+                    <th>Date Range</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Attachment</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for leave in leaves %}
+                <tr>
+                    <td>
+                        <a href="{% url 'employee_detail' leave.employee.id %}" class="fw-bold text-decoration-none text-dark">
+                            {{ leave.employee.name }}
+                        </a>
+                        <small class="text-muted d-block">{{ leave.employee.position }}</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border">{{ leave.get_leave_type_display }}</span>
+                        {% if leave.is_half_day %}<span class="badge bg-info text-white">Half Day</span>{% endif %}
+                    </td>
+                    <td class="small">
+                        {{ leave.start_date }} <span class="text-muted">to</span> {{ leave.end_date }}
+                    </td>
+                    <td class="fw-semibold">{{ leave.total_days_worked }} day(s)</td>
+                    <td>
+                        {% if leave.status == 'approved' %}
+                            <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1">
+                                <i class="bi bi-check-circle me-1"></i> Approved
+                            </span>
+                        {% elif leave.status == 'rejected' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-25 px-2 py-1">
+                                <i class="bi bi-x-circle me-1"></i> Rejected
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25 px-2 py-1">
+                                <i class="bi bi-hourglass-split me-1"></i> Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if leave.attachment %}
+                            <a href="{{ leave.attachment.url }}" target="_blank" class="btn btn-sm btn-outline-secondary py-0">
+                                <i class="bi bi-paperclip"></i> View
+                            </a>
+                        {% else %}
+                            <span class="text-muted small">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if leave.status == 'pending' %}
+                            <a href="{% url 'leave_approve' leave.id %}" class="btn btn-sm btn-primary fw-semibold">
+                                <i class="bi bi-check2-square"></i> Review
+                            </a>
+                        {% else %}
+                            <small class="text-muted">Reviewed</small>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar2-check fs-1 d-block mb-2 text-secondary"></i>
+                        <h5>No leave requests found.</h5>
+                        <p>When workers or managers submit leaves, they will appear here for review.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

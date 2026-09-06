@@ -1,0 +1,179 @@
+{% extends 'employees/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="mb-3">
+        <a href="{% url 'company_jobs_list' %}" class="btn btn-sm btn-outline-secondary fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Company Job Postings
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white p-4 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-primary text-white rounded-3 p-3 fs-4">
+                            <i class="bi bi-megaphone-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">Post Manpower Requirement</h4>
+                            <p class="text-muted small mb-0">Specify skilled technician and labor requirements for your contracting projects.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <!-- Workflow Info Banner -->
+                    <div class="alert alert-info border-0 rounded-3 shadow-sm d-flex align-items-start gap-3 mb-4">
+                        <i class="bi bi-shield-check fs-4 text-info flex-shrink-0"></i>
+                        <div class="small" style="line-height: 1.5;">
+                            <strong>Master Admin Verification Required:</strong>
+                            To prevent spam and guarantee authentic job listings, all requirements are submitted to the Master Administrator for review. Once approved, your requirement will appear instantly on the private social job feed.
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small mb-3">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Basic Information -->
+                        <h6 class="fw-bold text-dark mb-3">1. Requirement Specifications</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-dark">Job / Requirement Title * (عنوان الطلب)</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Trade / Profession Category * (التخصص المهني)</label>
+                                {{ form.trade_category }}
+                                {% if form.trade_category.errors %}<div class="text-danger small">{{ form.trade_category.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Number of Workers Needed * (العدد المطلوب)</label>
+                                {{ form.workers_needed }}
+                                {% if form.workers_needed.errors %}<div class="text-danger small">{{ form.workers_needed.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Work Location / City * (موقع العمل / المدينة)</label>
+                                {{ form.work_location }}
+                                {% if form.work_location.errors %}<div class="text-danger small">{{ form.work_location.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark">Client Project / Camp Name (اسم المشروع - اختياري)</label>
+                                {{ form.project_name }}
+                                {% if form.project_name.errors %}<div class="text-danger small">{{ form.project_name.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-secondary opacity-25">
+
+                        <!-- Compensation & Experience -->
+                        <h6 class="fw-bold text-dark mb-3">2. Compensation & Qualifications</h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-dark">Min Monthly Salary (SAR) *</label>
+                                {{ form.salary_min }}
+                                {% if form.salary_min.errors %}<div class="text-danger small">{{ form.salary_min.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-dark">Max Monthly Salary (SAR)</label>
+                                {{ form.salary_max }}
+                                {% if form.salary_max.errors %}<div class="text-danger small">{{ form.salary_max.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-dark">Min Experience (Years) *</label>
+                                {{ form.experience_years }}
+                                {% if form.experience_years.errors %}<div class="text-danger small">{{ form.experience_years.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-secondary opacity-25">
+
+                        <!-- Working Terms & Perks -->
+                        <h6 class="fw-bold text-dark mb-3">3. Provided Perks & Terms</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="form-check form-switch mb-0">
+                                        {{ form.accommodation_provided }}
+                                        <label class="form-check-label fw-bold text-dark small" for="{{ form.accommodation_provided.id_for_label }}">
+                                            Accommodation Provided (السكن مؤمن)
+                                        </label>
+                                    </div>
+                                    <div class="text-muted ms-4" style="font-size: 0.72rem;">Company provides camp or rental lodging free of charge.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="form-check form-switch mb-0">
+                                        {{ form.food_provided }}
+                                        <label class="form-check-label fw-bold text-dark small" for="{{ form.food_provided.id_for_label }}">
+                                            Food / Food Allowance Provided (الإعاشة)
+                                        </label>
+                                    </div>
+                                    <div class="text-muted ms-4" style="font-size: 0.72rem;">Mess facility or monthly food allowance provided.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="form-check form-switch mb-0">
+                                        {{ form.transportation_provided }}
+                                        <label class="form-check-label fw-bold text-dark small" for="{{ form.transportation_provided.id_for_label }}">
+                                            Transportation Provided (المواصلات)
+                                        </label>
+                                    </div>
+                                    <div class="text-muted ms-4" style="font-size: 0.72rem;">Daily worksite transport provided by company bus/vehicle.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="form-check form-switch mb-0">
+                                        {{ form.iqama_transfer_required }}
+                                        <label class="form-check-label fw-bold text-dark small" for="{{ form.iqama_transfer_required.id_for_label }}">
+                                            Iqama Transfer Required (نقل كفالة إلزامي)
+                                        </label>
+                                    </div>
+                                    <div class="text-muted ms-4" style="font-size: 0.72rem;">Check if candidate must transfer sponsorship via Qiwa.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-secondary opacity-25">
+
+                        <!-- Scope & Description -->
+                        <h6 class="fw-bold text-dark mb-3">4. Description & Scope of Work</h6>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-dark">Detailed Job Description & Requirements * (تفاصيل العمل والشروط)</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                            <a href="{% url 'company_jobs_list' %}" class="btn btn-light border px-4 fw-semibold">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                                <i class="bi bi-send-check-fill me-1"></i> Submit Requirement for Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

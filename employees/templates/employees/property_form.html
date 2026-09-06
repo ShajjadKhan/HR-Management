@@ -1,18 +1,143 @@
 {% extends 'employees/base.html' %}
+{% block title %}{% if property %}Edit Accommodation{% else %}Add Accommodation{% endif %} - {{ company.name }}{% endblock %}
+
 {% block content %}
-<h2>{% if property %}Edit{% else %}Add{% endif %} Property</h2>
-<form method="post" class="mt-3">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="id_property_name" class="form-label">Property Name</label>
-        <input type="text" name="property_name" id="id_property_name" class="form-control" value="{{ form.property_name.value|default:'' }}" required>
+<div class="card p-4 mx-auto shadow-sm" style="max-width: 720px;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">
+                <i class="bi bi-house-door-fill text-primary me-2"></i>{% if property %}Edit Accommodation{% else %}Add New Accommodation{% endif %}
+            </h4>
+            <small class="text-muted">Managing for: <strong>{{ company.name }}</strong></small>
+        </div>
+        <a href="{% url 'properties_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Housing List
+        </a>
     </div>
-    <div class="mb-3">
-        <label for="id_charge_amount" class="form-label">Charge Amount (SAR)</label>
-        <input type="number" step="0.01" name="charge_amount" id="id_charge_amount" class="form-control" value="{{ form.charge_amount.value|default:'' }}" required>
-        <small class="text-muted">Amount charged to the client.</small>
-    </div>
-    <button type="submit" class="btn btn-success">Save Property</button>
-    <a href="{% url 'properties_list' %}" class="btn btn-secondary">Cancel</a>
-</form>
+
+    <hr class="my-2 opacity-25">
+
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+
+        <!-- Section 1: Property Identification & Arrangement -->
+        <div class="p-3 bg-light rounded-3 border mb-4">
+            <h6 class="fw-bold text-primary mb-3">
+                <i class="bi bi-info-circle me-1"></i> Accommodation Identity & Housing Provider
+            </h6>
+
+            <div class="mb-3">
+                <label for="id_property_name" class="form-label small fw-bold text-muted">Property / Camp Name *</label>
+                {{ form.property_name }}
+                <small class="text-muted" style="font-size: 11px;">e.g. NEOM Site Camp Sector 3, Riyadh Industrial Labor Flats Bldg 2, Jeddah Port Camp</small>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-7">
+                    <label for="id_housing_type" class="form-label small fw-bold text-muted">Housing Provider / Arrangement *</label>
+                    {{ form.housing_type }}
+                    <small class="text-muted" style="font-size: 11px;">Choose who operates and provides this accommodation.</small>
+                </div>
+                <div class="col-md-5">
+                    <label for="id_capacity" class="form-label small fw-bold text-muted">Total Bed Capacity (Beds)</label>
+                    {{ form.capacity }}
+                    <small class="text-muted" style="font-size: 11px;">Total bed capacity in this property.</small>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <label for="id_location" class="form-label small fw-bold text-muted">Camp Location / Site Address</label>
+                {{ form.location }}
+                <small class="text-muted" style="font-size: 11px;">e.g. Tabuk / NEOM Project Site, Riyadh - Al Kharj Road, Jubail Industrial</small>
+            </div>
+        </div>
+
+        <!-- Section 2: Financial Breakdown (Contracting Economics) -->
+        <div class="p-3 bg-light rounded-3 border mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold text-success m-0">
+                    <i class="bi bi-cash-stack me-1"></i> Monthly Housing Financial Breakdown (SAR)
+                </h6>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 11px;">
+                    0.00 Accepted for Free Items
+                </span>
+            </div>
+            <p class="small text-muted mb-3">
+                Accurately track camp lease expenses versus client invoicing. Enter <strong>0.00</strong> whenever housing is provided by the client company or free of charge.
+            </p>
+
+            <div class="row g-3">
+                <!-- 1. Camp Cost to Company -->
+                <div class="col-md-4">
+                    <label for="id_cost_to_company" class="form-label small fw-bold text-muted">Camp Cost to Our Co. (SAR)</label>
+                    {{ form.cost_to_company }}
+                    <div class="form-text text-danger fw-semibold" style="font-size: 11px;">
+                        <i class="bi bi-dash-circle me-1"></i>Rent paid to landlord. <strong>0.00</strong> if client-provided.
+                    </div>
+                </div>
+
+                <!-- 2. Invoiced to Client -->
+                <div class="col-md-4">
+                    <label for="id_charge_to_client" class="form-label small fw-bold text-muted">Billed to Client (SAR)</label>
+                    {{ form.charge_to_client }}
+                    <div class="form-text text-success fw-semibold" style="font-size: 11px;">
+                        <i class="bi bi-plus-circle me-1"></i>Housing billed to client. <strong>0.00</strong> if free or bundled.
+                    </div>
+                </div>
+
+                <!-- 3. Worker Deduction -->
+                <div class="col-md-4">
+                    <label for="id_worker_deduction" class="form-label small fw-bold text-muted">Worker Deduction (SAR)</label>
+                    {{ form.worker_deduction }}
+                    <div class="form-text text-muted" style="font-size: 11px;">
+                        <i class="bi bi-person me-1"></i>Salary deduction. <strong>0.00</strong> for free company housing.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context Banner for Client Provided -->
+            <div id="clientProvidedAlert" class="alert alert-success mt-3 mb-0 py-2 px-3 small d-flex align-items-center gap-2" style="display: none;">
+                <i class="bi bi-shield-check fs-5"></i>
+                <div>
+                    <strong>Client-Provided Accommodation Selected:</strong> 
+                    Since the client provides housing directly at the project site, cost to company and deduction are set to SAR 0.00.
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'properties_list' %}" class="btn btn-outline-secondary w-50 py-2 fw-semibold">Cancel</a>
+            <button type="submit" class="btn btn-primary w-50 fw-bold py-2 shadow-sm">
+                <i class="bi bi-save me-1"></i> Save Accommodation
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const housingTypeSelect = document.getElementById('id_housing_type');
+        const costInput = document.getElementById('id_cost_to_company');
+        const clientChargeInput = document.getElementById('id_charge_to_client');
+        const deductionInput = document.getElementById('id_worker_deduction');
+        const alertBox = document.getElementById('clientProvidedAlert');
+
+        function updateFormState() {
+            if (housingTypeSelect && housingTypeSelect.value === 'client_provided') {
+                if (alertBox) alertBox.style.display = 'flex';
+                if (!costInput.value || parseFloat(costInput.value) === 0) costInput.value = '0.00';
+                if (!clientChargeInput.value || parseFloat(clientChargeInput.value) === 0) clientChargeInput.value = '0.00';
+                if (!deductionInput.value || parseFloat(deductionInput.value) === 0) deductionInput.value = '0.00';
+            } else {
+                if (alertBox) alertBox.style.display = 'none';
+            }
+        }
+
+        if (housingTypeSelect) {
+            housingTypeSelect.addEventListener('change', updateFormState);
+            updateFormState();
+        }
+    });
+</script>
 {% endblock %}

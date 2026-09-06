@@ -1,0 +1,159 @@
+{% extends 'employees/base.html' %}
+{% block title %}{% if is_new %}Onboard New Contracting Company{% else %}Edit Company Details{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card p-3 p-md-4 mx-auto shadow-sm" style="max-width: 850px;">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3">
+        <div>
+            <h4 class="fw-bold mb-1">
+                {% if is_new %}
+                    <i class="bi bi-building-add text-primary me-2"></i>Onboard New Company
+                {% else %}
+                    <i class="bi bi-pencil-square text-primary me-2"></i>Edit Company
+                {% endif %}
+            </h4>
+            <small class="text-muted">
+                {% if is_new %}
+                    Register client company, set worker quotas, and create administrator credentials.
+                {% else %}
+                    Update subscription plan, worker quotas, and company information.
+                {% endif %}
+            </small>
+        </div>
+        <a href="{% url 'master_dashboard' %}" class="btn btn-outline-secondary btn-sm w-100 w-sm-auto">
+            <i class="bi bi-arrow-left me-1"></i> Back to Companies
+        </a>
+    </div>
+
+    <hr class="my-3 opacity-25">
+
+    {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> Please correct the errors below.
+            <ul class="mb-0 mt-2 small ps-3">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Section 1: Company Profile -->
+        <h6 class="fw-bold text-uppercase text-primary small mb-3">
+            <i class="bi bi-building me-1"></i> 1. Company Profile & Information
+        </h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">Company Name *</label>
+                {{ form.name }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">CR Number (Commercial Registration) *</label>
+                {{ form.cr_number }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Contact Person</label>
+                {{ form.contact_person }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Contact Phone</label>
+                {{ form.phone }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Contact Email</label>
+                {{ form.email }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label small fw-bold text-muted">Office / HQ Address</label>
+                {{ form.address }}
+            </div>
+        </div>
+
+        {% if is_new %}
+        <!-- Section 2: Administrator Account Credentials -->
+        <h6 class="fw-bold text-uppercase text-primary small mb-3">
+            <i class="bi bi-person-badge me-1"></i> 2. Company Administrator Login Credentials
+        </h6>
+        <div class="p-3 mb-4 bg-light rounded-3 border">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-muted">Admin Username *</label>
+                    {{ form.admin_username }}
+                    <small class="text-muted" style="font-size: 11px;">Username to log in</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-muted">Admin Login Password *</label>
+                    {{ form.admin_password }}
+                    <small class="text-muted" style="font-size: 11px;">Set password for company admin</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-muted">Admin Login Email *</label>
+                    {{ form.admin_email }}
+                    <small class="text-muted" style="font-size: 11px;">Admin notification email</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Section 3: Subscription & Quota Allocation -->
+        <h6 class="fw-bold text-uppercase text-primary small mb-3">
+            <i class="bi bi-sliders me-1"></i> {% if is_new %}3{% else %}2{% endif %}. Subscription Plan & Worker Quota
+        </h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Subscription Plan Tier *</label>
+                {{ form.plan }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Max Workers Allowed (Quota) *</label>
+                {{ form.max_employees }}
+                <small class="text-muted" style="font-size: 11px;">Maximum employees company can add</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Subscription Expiry Date</label>
+                {{ form.subscription_expiry }}
+                <small class="text-muted" style="font-size: 11px;">Access suspended after this date</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-success">
+                    <i class="bi bi-cash-coin me-1"></i> Subscription Fee (SAR)
+                </label>
+                {{ form.subscription_fee }}
+                <small class="text-muted" style="font-size: 11px;">Recurring fee charged to this company (e.g. 12000.00)</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">
+                    <i class="bi bi-arrow-repeat me-1"></i> Billing Frequency
+                </label>
+                {{ form.billing_cycle }}
+                <small class="text-muted" style="font-size: 11px;">Monthly, Quarterly, Yearly, or One-time</small>
+            </div>
+            <div class="col-md-12">
+                <div class="form-check form-switch p-3 bg-light rounded-3 border">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-bold ms-2" for="{{ form.is_active.id_for_label }}">
+                        Grant Platform Access (Active Status)
+                    </label>
+                    <div class="small text-muted ms-2">When unchecked, this company's users will be blocked from accessing the system immediately.</div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <label class="form-label small fw-bold text-muted">Internal Admin Notes & Contract Details</label>
+                {{ form.notes }}
+            </div>
+        </div>
+
+        <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+            <a href="{% url 'master_dashboard' %}" class="btn btn-outline-secondary px-4 w-100 w-sm-auto">Cancel</a>
+            <button type="submit" class="btn btn-primary fw-bold px-4 w-100 w-sm-auto">
+                <i class="bi bi-save me-1"></i> {% if is_new %}Save & Onboard Company{% else %}Update Company Details{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

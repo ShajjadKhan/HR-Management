@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default:"Access Suspended" }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .suspended-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            max-width: 520px;
+            width: 100%;
+            padding: 2.5rem;
+            text-align: center;
+        }
+        .icon-box {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background-color: #fee2e2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="suspended-card">
+        <div class="icon-box">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h4 class="fw-bold mb-2 text-danger">{{ title }}</h4>
+        {% if company %}
+            <h6 class="text-primary fw-semibold mb-3">{{ company.name }}</h6>
+        {% endif %}
+        <p class="text-muted mb-4" style="line-height: 1.6;">
+            {{ message }}
+        </p>
+
+        <div class="p-3 bg-light rounded-3 text-start mb-4 border">
+            <div class="small fw-bold text-muted text-uppercase mb-1">To Restore Access:</div>
+            <ul class="mb-0 small text-muted ps-3">
+                <li>Contact the Platform Master Administrator or Sales Representative.</li>
+                <li>Verify your account billing and subscription status.</li>
+                <li>Provide your CR number: <strong>{{ company.cr_number|default:"N/A" }}</strong>.</li>
+            </ul>
+        </div>
+
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'login' %}" class="btn btn-outline-secondary px-4 fw-semibold">
+                <i class="bi bi-box-arrow-left me-1"></i> Back to Login
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-danger px-4 fw-semibold">
+                <i class="bi bi-power me-1"></i> Log Out
+            </a>
+        </div>
+    </div>
+</body>
+</html>

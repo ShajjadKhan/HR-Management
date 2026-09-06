@@ -1,24 +1,195 @@
 {% extends 'employees/base.html' %}
+{% block title %}{{ company.name }} - Workers Directory{% endblock %}
+
 {% block content %}
 <div class="card p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Header with Quota & Add Worker Button -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h4 class="fw-bold m-0 lang-text" data-en="All Employees Directory" data-ar="دليل جميع الموظفين">All Employees Directory</h4>
-            <small class="text-muted lang-text" data-en="Comprehensive view of all active subcontractor workers" data-ar="عرض شامل لجميع العمال المسجلين">Comprehensive view of all active subcontractor workers</small>
+            <h4 class="fw-bold m-0 lang-text" data-en="Workers & Contractors Directory" data-ar="دليل العمال والمقاولين">Workers & Contractors Directory</h4>
+            <small class="text-muted">
+                <strong>{{ company.name }}</strong> — Currently managing <strong>{{ employees.count }}</strong> worker(s) 
+                (Plan Limit: <strong>{{ company.max_employees }}</strong>)
+            </small>
         </div>
-        <a href="/employees/add/" class="btn btn-primary btn-sm fw-bold lang-text" data-en="+ Add New Worker" data-ar="+ إضافة عامل جديد">+ Add New Worker</a>
+        <div class="d-flex align-items-center gap-2">
+            {% if company.worker_count >= company.max_employees %}
+                <button class="btn btn-secondary btn-sm fw-bold disabled" title="Worker quota limit reached">
+                    <i class="bi bi-slash-circle me-1"></i> Quota Full ({{ company.worker_count }}/{{ company.max_employees }})
+                </button>
+            {% else %}
+                <a href="{% url 'company_two_matched_onboard' %}" class="btn btn-warning btn-sm fw-bold text-dark shadow-sm">
+                    <i class="bi bi-lightning-charge-fill me-1"></i> Two-Matched Onboard
+                </a>
+                <a href="{% url 'employee_add' %}" class="btn btn-primary btn-sm fw-bold shadow-sm">
+                    <i class="bi bi-person-plus-fill me-1"></i> + Add New Worker
+                </a>
+            {% endif %}
+            <a href="{% url 'reports' %}" class="btn btn-outline-success btn-sm fw-semibold">
+                <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+            </a>
+        </div>
     </div>
 
-    <div class="table-responsive">
+    <!-- Search & Filter Bar -->
+    <form method="GET" class="row g-2 mb-4 bg-light p-3 rounded-3 border">
+        <div class="col-md-4">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search name, Iqama #, passport, designation...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="client" class="form-select form-select-sm">
+                <option value="">All Client Companies</option>
+                {% for c in clients %}
+                    <option value="{{ c.id }}" {% if client_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="deployment" class="form-select form-select-sm">
+                <option value="">All Deployment Statuses</option>
+                <option value="deployed" {% if deployment_filter == 'deployed' %}selected{% endif %}>🟢 Deployed at Client</option>
+                <option value="available" {% if deployment_filter == 'available' %}selected{% endif %}>🟠 Unemployed / Bench</option>
+                <option value="vacation" {% if deployment_filter == 'vacation' %}selected{% endif %}>🔵 On Vacation</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="visa" class="form-select form-select-sm">
+                <option value="">All Visa Statuses</option>
+                <option value="active" {% if visa_filter == 'active' %}selected{% endif %}>Active / Valid</option>
+                <option value="expired" {% if visa_filter == 'expired' %}selected{% endif %}>Expired Iqama</option>
+                <option value="transfer" {% if visa_filter == 'transfer' %}selected{% endif %}>In Transfer</option>
+                <option value="exit_reentry" {% if visa_filter == 'exit_reentry' %}selected{% endif %}>Exit / Re-entry</option>
+            </select>
+        </div>
+        <div class="col-md-1 d-flex gap-1">
+            <button type="submit" class="btn btn-dark btn-sm w-100 fw-semibold">Filter</button>
+            {% if query or visa_filter or client_filter or deployment_filter %}
+                <a href="{% url 'employees_list' %}" class="btn btn-outline-secondary btn-sm" title="Reset"><i class="bi bi-x-lg"></i></a>
+            {% endif %}
+        </div>
+    </form>
+
+    <!-- MOBILE VIEW (CARDS): Displayed on phones and small screens (< 992px) -->
+    <div class="d-block d-lg-none">
+        {% for emp in employees %}
+        <div class="card mb-3 border shadow-sm rounded-3 overflow-hidden">
+            <!-- Mobile Card Header -->
+            <div class="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    {% if emp.photo %}
+                        <img src="{{ emp.photo.url }}" class="rounded-circle border" style="width: 44px; height: 44px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 16px;">
+                            {{ emp.name|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <a href="{% url 'employee_detail' emp.id %}" class="fw-bold text-decoration-none text-dark fs-6 d-block">
+                            {{ emp.name }}
+                        </a>
+                        <div class="small text-muted">
+                            <span class="badge bg-secondary bg-opacity-10 text-dark">{{ emp.position }}</span>
+                            <span class="ms-1">{{ emp.nationality|default:"Worker" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    {% if emp.iqama_expiry < today %}
+                        <span class="badge bg-danger"><i class="bi bi-x-octagon me-1"></i> Expired</span>
+                    {% elif emp.iqama_expiry <= thirty_days %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i> Expiring</span>
+                    {% else %}
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20">Valid</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="p-3">
+                <!-- Identification & Assignment -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center small text-muted mb-2 pb-2 border-bottom">
+                    <div><i class="bi bi-person-badge me-1"></i> Iqama: <strong class="font-monospace text-dark">{{ emp.iqama_number }}</strong></div>
+                    <div>
+                        {% if emp.deployment_status == 'deployed' and emp.assigned_client %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                <i class="bi bi-briefcase me-1"></i>{{ emp.assigned_client.name }}
+                            </span>
+                        {% elif emp.deployment_status == 'available' or not emp.assigned_client %}
+                            <span class="badge bg-warning bg-opacity-10 text-dark border border-warning">
+                                <i class="bi bi-exclamation-circle me-1 text-warning"></i> Bench
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-dark border">{{ emp.get_deployment_status_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 4 Financial & Payroll Breakdown Card -->
+                <div class="p-2 rounded-2 mb-2" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                    <div class="row g-2 text-center small">
+                        <div class="col-4">
+                            <div class="text-muted" style="font-size: 11px;">Basic Salary</div>
+                            <div class="fw-bold text-success">SAR {{ emp.basic_salary }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted" style="font-size: 11px;">Receiving Amount</div>
+                            <div class="fw-bold text-primary">SAR {{ emp.receiving_amount }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted" style="font-size: 11px;">Profit Margin</div>
+                            <div class="fw-bold text-dark badge bg-success bg-opacity-15 text-success">
+                                +{{ emp.profit_margin }} SAR
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-2 opacity-25">
+                    <div class="small" style="font-size: 11.5px;">
+                        <div class="d-flex justify-content-between text-muted mb-1">
+                            <span><i class="bi bi-bank me-1 text-secondary"></i> Salary From Account:</span>
+                            <span class="fw-semibold text-dark text-truncate ms-2" style="max-width: 170px;">{{ emp.salary_from_account|default:"Primary WPS Account" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted">
+                            <span><i class="bi bi-building me-1 text-secondary"></i> Payment Company:</span>
+                            <span class="fw-semibold text-dark text-truncate ms-2" style="max-width: 170px;">{{ emp.salary_payment_company|default:company.name }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{% url 'employee_detail' emp.id %}" class="btn btn-primary btn-sm flex-grow-1 fw-semibold py-2">
+                        <i class="bi bi-person-lines-fill me-1"></i> View Full Profile
+                    </a>
+                    <a href="{% url 'employee_delete' emp.id %}" class="btn btn-outline-danger btn-sm px-3 py-2" title="Delete worker">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5 text-muted bg-light rounded-3">
+            <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+            <h5>No workers found matching your filter.</h5>
+            <p class="small mb-3">Start adding workers to <strong>{{ company.name }}</strong>.</p>
+            <a href="{% url 'employee_add' %}" class="btn btn-primary btn-sm fw-bold">
+                <i class="bi bi-person-plus-fill me-1"></i> Add Worker
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- DESKTOP TABLE VIEW: Displayed on screens >= 992px -->
+    <div class="table-responsive d-none d-lg-block">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th class="lang-text" data-en="Worker" data-ar="الموظف">Worker</th>
-                    <th class="lang-text" data-en="Iqama / Passport" data-ar="الإقامة / الجواز">Iqama / Passport</th>
-                    <th class="lang-text" data-en="Client Assignment" data-ar="الشركة التابع لها">Client Assignment</th>
-                    <th class="lang-text" data-en="Position" data-ar="المهنة">Position</th>
-                    <th class="lang-text" data-en="Basic Salary" data-ar="الراتب">Basic Salary</th>
-                    <th class="lang-text" data-en="Receiving Amount" data-ar="مبلغ العقد">Receiving Amount</th>
+                    <th class="lang-text" data-en="Iqama / Kafeel" data-ar="الإقامة / الكفيل">Iqama & Kafeel</th>
+                    <th class="lang-text" data-en="Client Assignment" data-ar="الموقع">Client / Project Site</th>
+                    <th class="lang-text" data-en="Financial Contract" data-ar="العقد المالي">Financials (Basic / Billed / Margin)</th>
+                    <th class="lang-text" data-en="Payroll Disbursement" data-ar="حساب الدفع">Salary Account & Disbursing Entity</th>
                     <th class="lang-text" data-en="Iqama Expiry" data-ar="تاريخ الإقامة">Iqama Expiry</th>
                     <th class="text-end lang-text" data-en="Action" data-ar="الإجراء">Action</th>
                 </tr>
@@ -29,38 +200,113 @@
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             {% if emp.photo %}
-                                <img src="{{ emp.photo.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                <img src="{{ emp.photo.url }}" class="rounded-circle border" style="width: 42px; height: 42px; object-fit: cover;">
                             {% else %}
-                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">{{ emp.name|slice:":1" }}</div>
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 42px; height: 42px;">
+                                    {{ emp.name|slice:":1"|upper }}
+                                </div>
                             {% endif %}
                             <div>
-                                <div class="fw-bold mb-0">{{ emp.name }}</div>
-                                <small class="text-muted"><i class="bi bi-telephone"></i> {{ emp.phone_number|default:"No Phone" }}</small>
+                                <a href="{% url 'employee_detail' emp.id %}" class="fw-bold text-decoration-none text-dark d-block">
+                                    {{ emp.name }}
+                                </a>
+                                <div class="small text-muted">{{ emp.position }}</div>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div class="font-monospace fw-semibold">{{ emp.iqama_number }}</div>
-                        <small class="text-muted font-monospace">{{ emp.passport_number }}</small>
+                        {% if emp.kafeel_name %}
+                            <small class="text-muted d-block" style="font-size: 11px;"><i class="bi bi-person-check me-1"></i>{{ emp.kafeel_name }}</small>
+                        {% endif %}
                     </td>
-                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">{{ emp.client_company.name|default:emp.company_name }}</span></td>
-                    <td>{{ emp.position }}</td>
-                    <td class="fw-bold text-success">{{ emp.basic_salary }} SAR</td>
-                    <td class="fw-bold text-primary">{{ emp.receiving_amount }} SAR</td>
                     <td>
-                        {% if emp.iqama_expiry <= thirty_days %}
-                            <span class="badge bg-danger px-2 py-1"><i class="bi bi-clock-history"></i> {{ emp.iqama_expiry }}</span>
+                        {% if emp.deployment_status == 'deployed' and emp.assigned_client %}
+                            <div>
+                                <a href="{% url 'client_detail' emp.assigned_client.id %}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 text-decoration-none d-inline-block mb-1">
+                                    <i class="bi bi-briefcase me-1"></i>{{ emp.assigned_client.name }}
+                                </a>
+                                {% if emp.client_project %}
+                                    <small class="text-muted d-block" style="font-size: 11px;">
+                                        <i class="bi bi-geo-alt me-1"></i>{{ emp.client_project }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        {% elif emp.deployment_status == 'available' or not emp.assigned_client %}
+                            <div>
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1">
+                                    <i class="bi bi-exclamation-circle me-1 text-warning"></i> Unemployed / Bench
+                                </span>
+                                <small class="text-danger d-block mt-1" style="font-size: 11px;">
+                                    Cost: SAR {{ emp.basic_salary }}/mo
+                                </small>
+                            </div>
+                        {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">
+                                {{ emp.get_deployment_status_display|default:"General" }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Basic:</span>
+                                <strong class="text-success">{{ emp.basic_salary }} SAR</strong>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Billed:</span>
+                                <strong class="text-primary">{{ emp.receiving_amount }} SAR</strong>
+                            </div>
+                            <div class="d-flex justify-content-between small border-top pt-1">
+                                <span class="text-muted">Margin:</span>
+                                <strong class="badge bg-success bg-opacity-15 text-success">+{{ emp.profit_margin }} SAR ({{ emp.profit_margin_pct }}%)</strong>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small">
+                            <div class="mb-1">
+                                <i class="bi bi-bank text-secondary me-1"></i>
+                                <span class="text-dark fw-semibold">{{ emp.salary_from_account|default:"Primary WPS Account" }}</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-building text-secondary me-1"></i>
+                                <span class="text-muted">{{ emp.salary_payment_company|default:company.name }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if emp.iqama_expiry < today %}
+                            <span class="badge bg-danger px-2 py-1"><i class="bi bi-x-octagon me-1"></i> Expired: {{ emp.iqama_expiry }}</span>
+                        {% elif emp.iqama_expiry <= thirty_days %}
+                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-clock-history me-1"></i> {{ emp.iqama_expiry }}</span>
                         {% else %}
                             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2 py-1">{{ emp.iqama_expiry }}</span>
                         {% endif %}
                     </td>
                     <td class="text-end">
-                        <a href="/employees/profile/{{ emp.id }}/" class="btn btn-sm btn-outline-primary fw-semibold"><i class="bi bi-pencil-square"></i> View / Edit</a>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'employee_detail' emp.id %}" class="btn btn-outline-primary fw-semibold">
+                                <i class="bi bi-pencil-square"></i> Profile
+                            </a>
+                            <a href="{% url 'employee_delete' emp.id %}" class="btn btn-outline-danger" title="Delete worker">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted lang-text" data-en="No employees found in database." data-ar="لا يوجد موظفين في قاعدة البيانات.">No employees found in database.</td>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+                        <h5>No workers found matching your filter.</h5>
+                        {% if not query and not visa_filter %}
+                            <p class="mb-3">Start adding workers to <strong>{{ company.name }}</strong>.</p>
+                            <a href="{% url 'employee_add' %}" class="btn btn-primary btn-sm fw-bold">
+                                <i class="bi bi-person-plus-fill me-1"></i> Add Worker
+                            </a>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

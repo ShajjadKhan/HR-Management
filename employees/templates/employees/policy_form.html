@@ -1,9 +1,312 @@
 {% extends 'employees/base.html' %}
+{% block title %}Leave Policy & Contract Commitments - {{ company.name }}{% endblock %}
+
 {% block content %}
-<h2>Edit Leave Policy</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Save Policy</button>
-</form>
+<div class="container-fluid px-0" style="max-width: 1100px;">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="Annual Leave Policy & Worker Contract Commitments" data-ar="سياسة الإجازات السنوية والتزامات عقود العمال">
+                <i class="bi bi-sliders text-primary me-2"></i>Annual Leave Policy & Worker Contract Commitments
+            </h4>
+            <small class="text-muted">Contracting Company: <strong>{{ company.name }}</strong></small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'leave_list' %}" class="btn btn-outline-primary btn-sm fw-semibold">
+                <i class="bi bi-calendar-check me-1"></i> Leave Requests
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm fw-semibold">Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Contract-based Architecture Notice -->
+    <div class="alert alert-info border-info border-opacity-25 shadow-sm mb-4">
+        <div class="d-flex gap-3 align-items-start">
+            <i class="bi bi-info-circle-fill fs-4 text-info mt-1"></i>
+            <div>
+                <h6 class="fw-bold mb-1 lang-text" data-en="Individual Contract-Based Leave System" data-ar="نظام الإجازات المستند إلى عقود العمل الفردية">
+                    Individual Contract-Based Leave System (Saudi Labor Law & Manpower Contracting)
+                </h6>
+                <p class="small mb-0 text-muted">
+                    In contracting and manpower supply, leave entitlement is <strong>not a flat bulk policy</strong>. 
+                    Each worker has an individual contract commitment (e.g., <strong>21 days</strong> standard labor, <strong>30 days</strong> for engineers/supervisors, or <strong>42 days</strong> for 2-year cycles). 
+                    The form below sets the <strong>Company Baseline Default Template</strong> applied when registering new workers. 
+                    You can customize or review each worker's individual contract entitlement in the roster below or directly on their profile.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 1: Company Baseline Default Template -->
+    <div class="card p-4 shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+            <div>
+                <h5 class="fw-bold m-0 text-primary">
+                    <i class="bi bi-gear-wide-connected me-2"></i>1. Company Baseline Default Template
+                </h5>
+                <small class="text-muted">Default leave terms automatically pre-populated when adding a new worker to <strong>{{ company.name }}</strong>.</small>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">New Worker Baseline</span>
+        </div>
+
+        <form method="post" class="mt-3">
+            {% csrf_token %}
+            <div class="row g-3 mb-3">
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-label small fw-bold text-muted">Default Yearly Annual Leave (Days)</label>
+                    {{ form.yearly_leave }}
+                    <small class="text-muted" style="font-size: 11px;">Saudi Labor Law standard is 21 days (30 days after 5 yrs)</small>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-label small fw-bold text-muted">Default Carry Forward Limit (Days)</label>
+                    {{ form.carry_forward_limit }}
+                    <small class="text-muted" style="font-size: 11px;">Max unused days rolling into next calendar year</small>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-label small fw-bold text-muted">Default Paid Sick Leave (Days/Year)</label>
+                    {{ form.sick_leave_per_year }}
+                    <small class="text-muted" style="font-size: 11px;">Standard sick leave allocation per year</small>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-label small fw-bold text-muted">Default Emergency Leave (Days/Year)</label>
+                    {{ form.emergency_leave_per_year }}
+                    <small class="text-muted" style="font-size: 11px;">Casual or compassionate leave quota</small>
+                </div>
+                <div class="col-md-4 col-sm-6 d-flex align-items-center mt-4">
+                    <div class="form-check">
+                        {{ form.allow_negative }}
+                        <label class="form-check-label small fw-bold text-muted ms-2" for="{{ form.allow_negative.id_for_label }}">
+                            Allow Advance / Negative Leave by Default
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-label small fw-bold text-muted">Default Max Advance Limit (Days)</label>
+                    {{ form.negative_limit }}
+                    <small class="text-muted" style="font-size: 11px;">Upper limit for negative balance</small>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm">
+                    <i class="bi bi-check2-circle me-1"></i> Save Baseline Default Template
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Section 2: Individual Worker Contract Commitments Roster -->
+    <div class="card p-4 shadow-sm">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-2 border-bottom">
+            <div>
+                <h5 class="fw-bold m-0 text-dark">
+                    <i class="bi bi-people-fill text-success me-2"></i>2. Individual Worker Contract Commitments
+                </h5>
+                <small class="text-muted">Active workers and their specific contractual leave commitments ({{ worker_leaves|length }} Total Workers).</small>
+            </div>
+            <div class="d-flex gap-2">
+                <input type="text" id="workerSearchInput" class="form-control form-control-sm" placeholder="Search by name, position or client..." style="max-width: 280px;" onkeyup="filterWorkerTable()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="workerLeaveTable">
+                <thead class="table-light">
+                    <tr class="small text-muted text-uppercase" style="font-size: 11px;">
+                        <th>Worker & Trade</th>
+                        <th>Client / Site</th>
+                        <th class="text-center">Annual Leave (Contract)</th>
+                        <th class="text-center">Sick & Emerg.</th>
+                        <th class="text-center">Flight Ticket</th>
+                        <th class="text-center">{{ current_year }} Balance</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in worker_leaves %}
+                    <tr class="worker-row">
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-sm bg-light rounded-circle border d-flex align-items-center justify-content-center fw-bold text-secondary" style="width: 36px; height: 36px;">
+                                    {{ item.employee.name|slice:":2"|upper }}
+                                </div>
+                                <div>
+                                    <a href="{% url 'employee_detail' item.employee.id %}" class="fw-bold text-decoration-none text-dark worker-name d-block">
+                                        {{ item.employee.name }}
+                                    </a>
+                                    <small class="text-muted d-block worker-position" style="font-size: 11px;">
+                                        {{ item.employee.position }} • Iqama: {{ item.employee.iqama_number }}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="worker-client badge bg-secondary bg-opacity-10 text-dark border">
+                                {{ item.employee.current_client_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success bg-opacity-15 text-success fw-bold fs-6 px-2 py-1">
+                                {{ item.employee.effective_annual_leave }} days/yr
+                            </span>
+                            {% if item.employee.contract_carry_forward %}
+                                <div class="text-muted" style="font-size: 10px;">Carry: max {{ item.employee.effective_carry_forward }}d</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="small fw-semibold text-dark">{{ item.employee.effective_sick_leave }}d Sick</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ item.employee.effective_emergency_leave }}d Emergency</small>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info-subtle text-info border" style="font-size: 11px;">
+                                {{ item.employee.get_contract_ticket_frequency_display }}
+                            </span>
+                            {% if item.employee.contract_allow_negative %}
+                                <div class="text-success fw-semibold" style="font-size: 10px;">Advance Allowed ({{ item.employee.contract_negative_limit }}d)</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if item.balance %}
+                                <div class="d-inline-flex flex-column align-items-center">
+                                    <span class="badge bg-primary px-2 py-1" title="Available Remaining">
+                                        {{ item.balance.remaining_annual_leave }} days left
+                                    </span>
+                                    <small class="text-muted mt-1" style="font-size: 10px;">
+                                        Accrued: {{ item.balance.accrued_balance }} | Used: {{ item.balance.used_balance }}
+                                    </small>
+                                </div>
+                            {% else %}
+                                <span class="badge bg-light text-muted border">No balance yet</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editContractModal_{{ item.employee.id }}" title="Edit Contract Leave Commitment">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit Terms
+                                </button>
+                                <a href="{% url 'employee_detail' item.employee.id %}" class="btn btn-outline-secondary" title="View Full Profile">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No employees registered under this company yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for Editing Worker Contract Leave Terms -->
+{% for item in worker_leaves %}
+<div class="modal fade" id="editContractModal_{{ item.employee.id }}" tabindex="-1" aria-labelledby="editContractModalLabel_{{ item.employee.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'employee_leave_contract_edit' item.employee.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'policy_edit' %}">
+                <div class="modal-header bg-light">
+                    <div>
+                        <h5 class="modal-title fw-bold m-0" id="editContractModalLabel_{{ item.employee.id }}">
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Contract Leave Entitlement: {{ item.employee.name }}
+                        </h5>
+                        <small class="text-muted">Role: {{ item.employee.position }} • Client: {{ item.employee.current_client_display }}</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-light border mb-3 small">
+                        <i class="bi bi-shield-lock text-primary me-1"></i>
+                        Update the specific leave entitlement and terms committed in <strong>{{ item.employee.name }}'s</strong> individual employment contract.
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-success mb-1">Contract Annual Leave (Days/Year) *</label>
+                            {{ item.contract_form.contract_annual_leave }}
+                            <small class="text-muted" style="font-size: 11px;">e.g. 21 standard, 30 for engineers/management, 42 for 2-year contract.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Carry Forward Limit (Days)</label>
+                            {{ item.contract_form.contract_carry_forward }}
+                            <small class="text-muted" style="font-size: 11px;">Max unused days allowed to roll over.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Paid Sick Leave Allowed / Year (Days)</label>
+                            {{ item.contract_form.contract_sick_leave }}
+                            <small class="text-muted" style="font-size: 11px;">Saudi Labor Law Art 117 provision or contractual quota.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Emergency Leave Allowed / Year (Days)</label>
+                            {{ item.contract_form.contract_emergency_leave }}
+                            <small class="text-muted" style="font-size: 11px;">Casual or emergency leave quota.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Flight Ticket Entitlement</label>
+                            {{ item.contract_form.contract_ticket_frequency }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted mb-1">Max Advance / Negative Limit (Days)</label>
+                            {{ item.contract_form.contract_negative_limit }}
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                {{ item.contract_form.contract_allow_negative }}
+                                <label class="form-check-label small fw-bold text-dark ms-1" for="{{ item.contract_form.contract_allow_negative.id_for_label }}">
+                                    Allow Advance Leave (Negative Balance) for this worker
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-muted mb-1">Contractual Stipulations & Notes</label>
+                            {{ item.contract_form.leave_contract_notes }}
+                        </div>
+                        <div class="col-md-12">
+                            <div class="p-3 bg-light rounded-2 border">
+                                <div class="form-check">
+                                    {{ item.contract_form.sync_leave_balance }}
+                                    <label class="form-check-label small fw-bold text-primary ms-1" for="{{ item.contract_form.sync_leave_balance.id_for_label }}">
+                                        Sync {{ current_year }} Accrued Balance to New Contract Entitlement
+                                    </label>
+                                    <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                                        Immediately sets this worker's {{ current_year }} accrued leave quota to match the newly entered contract annual leave days.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Save Contract Terms
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function filterWorkerTable() {
+    const input = document.getElementById('workerSearchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#workerLeaveTable tbody tr.worker-row');
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        if (text.includes(input)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
 {% endblock %}
+
