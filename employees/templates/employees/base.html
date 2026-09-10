@@ -364,10 +364,57 @@
             color: #ffffff;
             font-weight: 700;
             margin: 0;
-            font-size: 1.15rem;
+            font-size: 1.02rem;
             display: flex;
             align-items: center;
             gap: 8px;
+            min-width: 0;
+            line-height: 1.2;
+        }
+
+        .brand-topline {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .brand-title-wrap {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .brand-title-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .brand-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex: 0 0 auto;
+        }
+
+        .brand-action-btn {
+            width: 30px !important;
+            height: 30px !important;
+            min-width: 30px !important;
+            border-radius: 8px !important;
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: #f1f5f9 !important;
+        }
+
+        .brand-lang-btn {
+            min-height: 30px;
+            padding: 4px 7px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1;
         }
 
         .nav-section-title {
@@ -629,17 +676,20 @@
                 <!-- Brand / Company Title (Desktop) -->
                 <div class="brand-header d-none d-md-block">
                     {% if current_company %}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5><i class="bi bi-building-fill text-primary flex-shrink-0"></i> <span class="text-truncate">{{ current_company.name }}</span></h5>
-                            <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="width: 28px; height: 28px; border-radius: 6px; background: #1e293b; border: 1px solid #334155; color: #f1f5f9;">
+                        <div class="brand-topline">
+                            <div class="brand-title-wrap">
+                                <h5><i class="bi bi-building-fill text-primary flex-shrink-0"></i> <span class="brand-title-text">{{ current_company.name }}</span></h5>
+                                <small class="text-muted d-block text-truncate mt-1">Company workspace</small>
+                            </div>
+                            <div class="brand-actions" aria-label="Display controls">
+                                <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center brand-action-btn" onclick="toggleTheme()" title="Toggle Day/Dark Mode">
                                     <i class="bi bi-moon-stars-fill theme-icon-dark" style="font-size: 0.8rem;"></i>
                                     <i class="bi bi-sun-fill theme-icon-light d-none text-warning" style="font-size: 0.8rem;"></i>
                                 </button>
-                                <button class="lang-switch-btn flex-shrink-0" onclick="toggleLanguage()" title="Toggle English/Arabic">EN/عربي</button>
+                                <button class="lang-switch-btn brand-lang-btn" onclick="toggleLanguage()" title="Toggle English/Arabic">EN/عربي</button>
                             </div>
                         </div>
-                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
                             <span class="badge-quota flex-shrink-0">
                                 <i class="bi bi-people-fill me-1"></i>{{ current_company.worker_count }}/{{ current_company.max_employees }}
                             </span>
@@ -648,17 +698,19 @@
                             </span>
                         </div>
                     {% else %}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5><i class="bi bi-shield-check text-warning flex-shrink-0"></i> <span class="text-nowrap">HR SaaS Master</span></h5>
-                            <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="width: 28px; height: 28px; border-radius: 6px; background: #1e293b; border: 1px solid #334155; color: #f1f5f9;">
+                        <div class="brand-topline">
+                            <div class="brand-title-wrap">
+                                <h5><i class="bi bi-shield-check text-warning flex-shrink-0"></i> <span class="brand-title-text">HR SaaS Master</span></h5>
+                                <small class="text-muted d-block text-truncate mt-1">Platform Administration</small>
+                            </div>
+                            <div class="brand-actions" aria-label="Display controls">
+                                <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center brand-action-btn" onclick="toggleTheme()" title="Toggle Day/Dark Mode">
                                     <i class="bi bi-moon-stars-fill theme-icon-dark" style="font-size: 0.8rem;"></i>
                                     <i class="bi bi-sun-fill theme-icon-light d-none text-warning" style="font-size: 0.8rem;"></i>
                                 </button>
-                                <button class="lang-switch-btn flex-shrink-0" onclick="toggleLanguage()">EN/عربي</button>
+                                <button class="lang-switch-btn brand-lang-btn" onclick="toggleLanguage()">EN/عربي</button>
                             </div>
                         </div>
-                        <small class="text-muted text-nowrap">Platform Administration</small>
                     {% endif %}
                 </div>
 
