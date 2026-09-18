@@ -37,7 +37,7 @@
 
     <!-- Applicants List Section -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h6 class="fw-bold mb-0 text-dark">
                 <i class="bi bi-people-fill text-primary me-2"></i> Verified Candidate Applicants ({{ applications.count }})
             </h6>
@@ -46,7 +46,7 @@
         <div class="card-body p-0">
             {% if applications %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
                     <thead class="table-light small">
                         <tr>
                             <th>Candidate Details</th>

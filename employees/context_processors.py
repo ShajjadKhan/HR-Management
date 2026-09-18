@@ -22,9 +22,11 @@ def tenant_context(request):
     is_jobseeker = hasattr(request.user, 'jobseeker_profile')
     jobseeker_profile = getattr(request.user, 'jobseeker_profile', None) if is_jobseeker else None
 
+    is_moderator = request.user.is_staff and not request.user.is_superuser
+
     pending_jobs_count = 0
     pending_jobseekers_count = 0
-    if is_master:
+    if is_master or is_moderator:
         from .models import JobPost, JobSeekerProfile
         pending_jobs_count = JobPost.objects.filter(status='pending_approval').count()
         pending_jobseekers_count = JobSeekerProfile.objects.filter(status='pending_approval').count()
@@ -32,6 +34,7 @@ def tenant_context(request):
     return {
         'current_company': company,
         'is_master_admin': is_master,
+        'is_moderator': is_moderator,
         'is_impersonating': is_supreme_mode,
         'is_supreme_mode': is_supreme_mode,
         'supreme_mode_reason': request.session.get('supreme_mode_reason', ''),
@@ -41,3 +44,4 @@ def tenant_context(request):
         'pending_jobs_count': pending_jobs_count,
         'pending_jobseekers_count': pending_jobseekers_count,
     }
+

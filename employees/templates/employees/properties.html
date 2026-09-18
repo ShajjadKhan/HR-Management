@@ -11,7 +11,7 @@
                 Managing accommodations for: <strong>{{ company.name }}</strong>
             </small>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
             <a href="{% url 'clients_list' %}" class="btn btn-outline-secondary btn-sm fw-semibold">
                 <i class="bi bi-briefcase me-1"></i> View Clients & Sites
             </a>
@@ -115,7 +115,7 @@
 
     <!-- Properties Table (Desktop >= 992px) -->
     <div class="table-responsive d-none d-lg-block">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" style="min-width: 860px;">
             <thead class="table-light">
                 <tr>
                     <th class="lang-text" data-en="Accommodation / Location" data-ar="السكن والموقع">Camp / Accommodation</th>

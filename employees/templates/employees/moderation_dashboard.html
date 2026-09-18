@@ -1,0 +1,378 @@
+{% extends 'employees/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Top Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill fw-bold">
+                    <i class="bi bi-shield-lock-fill me-1"></i> Trust & Safety Portal
+                </span>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1 rounded-pill small">
+                    <i class="bi bi-eye-slash-fill me-1"></i> Restricted Mode (No Tenant Financials / No God Mode)
+                </span>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Platform Moderation & Anti-Crime Hub</h3>
+            <p class="text-muted small mb-0">
+                Independent moderation dashboard for vetting candidate identities, approving company job posts, and monitoring referral provenance to eliminate spam and fraudulent actors.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'master_jobseekers_queue' %}" class="btn btn-primary fw-semibold d-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-person-check-fill"></i>
+                <span>Candidate Approvals</span>
+                {% if pending_candidates_count > 0 %}
+                <span class="badge bg-white text-primary ms-1">{{ pending_candidates_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'master_job_posts_queue' %}" class="btn btn-warning text-dark fw-semibold d-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-megaphone-fill"></i>
+                <span>Job Posts Queue</span>
+                {% if pending_jobs_count > 0 %}
+                <span class="badge bg-dark text-white ms-1">{{ pending_jobs_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'master_referrals_list' %}" class="btn btn-outline-dark fw-semibold d-flex align-items-center gap-1">
+                <i class="bi bi-link-45deg"></i>
+                <span>Referral Audit Trail</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Security Isolation Notice Banner -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light border-start border-4 border-info">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex align-items-start gap-3">
+                <div class="bg-info bg-opacity-10 text-info rounded-3 p-2 p-md-3 fs-4 flex-shrink-0">
+                    <i class="bi bi-shield-shaded"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold text-dark mb-1">Principle of Least Privilege & Anti-Spam Security Protocol</h6>
+                    <p class="text-muted small mb-0" style="line-height: 1.5;">
+                        • <strong>Isolated Governance:</strong> This dashboard is strictly scoped to identity verification, spam prevention, and job requirements moderation. It cannot access tenant company bank accounts, salary disbursements, or enter customer tenant data.<br>
+                        • <strong>Tamper-Proof Provenance:</strong> Every candidate registration requires a single-use cryptographically bound invite token. Replay attacks and client-side DOM inspection modifications are strictly rejected by the server.<br>
+                        • <strong>Anti-Crime Audit:</strong> Master Admin and Staff Moderators can revoke suspicious invitation keys with one click and suspend abusive accounts instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Row -->
+    <div class="row g-2 g-md-3 mb-4 row-cols-2 row-cols-md-3 row-cols-lg-6">
+        <div class="col">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 border-start border-4 border-warning">
+                <div class="text-muted small text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Pending Candidates</div>
+                <h4 class="fw-bold text-warning mb-0 mt-1">{{ pending_candidates_count }}</h4>
+                <small class="text-muted" style="font-size: 0.70rem;">Needs Identity KYC</small>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 border-start border-4 border-success">
+                <div class="text-muted small text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Active Candidates</div>
+                <h4 class="fw-bold text-success mb-0 mt-1">{{ active_candidates_count }}</h4>
+                <small class="text-success" style="font-size: 0.70rem;">Verified & Searchable</small>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 border-start border-4 border-danger">
+                <div class="text-muted small text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Suspended / Blocked</div>
+                <h4 class="fw-bold text-danger mb-0 mt-1">{{ suspended_candidates_count }}</h4>
+                <small class="text-danger" style="font-size: 0.70rem;">Blacklisted Spammers</small>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 border-start border-4 border-primary">
+                <div class="text-muted small text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Pending Job Posts</div>
+                <h4 class="fw-bold text-primary mb-0 mt-1">{{ pending_jobs_count }}</h4>
+                <small class="text-muted" style="font-size: 0.70rem;">Needs Approval</small>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 border-start border-4 border-info">
+                <div class="text-muted small text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Live Feed Jobs</div>
+                <h4 class="fw-bold text-info mb-0 mt-1">{{ active_jobs_count }}</h4>
+                <small class="text-muted" style="font-size: 0.70rem;">Published</small>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 border-start border-4 border-dark">
+                <div class="text-muted small text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Active 1-Time Invites</div>
+                <h4 class="fw-bold text-dark mb-0 mt-1">{{ active_referrals_count }}</h4>
+                <small class="text-muted" style="font-size: 0.70rem;">Unused Single-Use</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 1: Pending Candidate KYC Queue -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-header bg-white p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold">Priority KYC</span>
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-person-lines-fill text-warning me-1"></i> Candidate Verification Queue ({{ pending_candidates_count }})
+                </h6>
+            </div>
+            <a href="{% url 'master_jobseekers_queue' %}" class="btn btn-sm btn-outline-primary fw-semibold">
+                View All Pending <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if pending_candidates %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Candidate Details</th>
+                            <th>Trade / Profession</th>
+                            <th>City & Salary</th>
+                            <th>Provenance (Invited By)</th>
+                            <th>Registered</th>
+                            <th class="text-end">Moderation Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in pending_candidates %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ c.full_name }}</div>
+                                <div class="text-muted small" style="font-size: 0.75rem;">
+                                    Iqama: <code class="fw-bold">{{ c.iqama_number }}</code> • Phone: <span>{{ c.phone_number }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2 fw-semibold">
+                                    {{ c.trade }}
+                                </span>
+                                <div class="text-muted small" style="font-size: 0.72rem;">{{ c.experience_years }} yr(s) exp</div>
+                            </td>
+                            <td>
+                                <div class="small fw-semibold text-dark">{{ c.current_city }}</div>
+                                <div class="text-muted small" style="font-size: 0.72rem;">SAR {{ c.expected_salary }}/mo</div>
+                            </td>
+                            <td>
+                                {% if c.referred_by_link %}
+                                    {% if c.referred_by_link.created_by_company %}
+                                        <span class="badge bg-primary text-white py-1 px-2" style="font-size: 0.68rem;">
+                                            <i class="bi bi-building me-1"></i>{{ c.referred_by_link.created_by_company.name }}
+                                        </span>
+                                    {% elif c.referred_by_link.created_by.jobseeker_profile %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-2" style="font-size: 0.68rem;">
+                                            <i class="bi bi-person me-1"></i>Colleague: {{ c.referred_by_link.created_by.jobseeker_profile.full_name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark py-1 px-2" style="font-size: 0.68rem;">
+                                            <i class="bi bi-shield-lock me-1"></i>Master Admin
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted small">— Direct / System —</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ c.created_at|date:"M d, Y H:i" }}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'master_jobseeker_approve' c.id %}" class="btn btn-sm btn-success fw-semibold px-3" onclick="return confirm('Approve candidate {{ c.full_name }} (Iqama: {{ c.iqama_number }})?');">
+                                        <i class="bi bi-check-lg me-1"></i> Approve
+                                    </a>
+                                    <a href="{% url 'master_jobseeker_suspend' c.id %}" class="btn btn-sm btn-outline-danger fw-semibold px-2" onclick="return confirm('⚠️ Blacklist and suspend candidate {{ c.full_name }}?');" title="Suspend / Block">
+                                        <i class="bi bi-slash-circle"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-patch-check-fill text-success" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold text-dark mt-2 mb-1">Candidate Queue Clear!</h6>
+                <p class="text-muted small mb-0">All registered candidates have been verified and processed.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 2: Pending Job Posts Queue -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-header bg-white p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary text-white px-2 py-1 rounded-pill fw-bold">Company Posts</span>
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-megaphone-fill text-primary me-1"></i> Job Posts Moderation Queue ({{ pending_jobs_count }})
+                </h6>
+            </div>
+            <a href="{% url 'master_job_posts_queue' %}" class="btn btn-sm btn-outline-primary fw-semibold">
+                View All Posts <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if pending_jobs %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Company & Title</th>
+                            <th>Trade & Required Count</th>
+                            <th>Location & Wage</th>
+                            <th>Submitted Date</th>
+                            <th class="text-end">Moderation Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in pending_jobs %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ j.title }}</div>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
+                                    <i class="bi bi-building me-1"></i> {{ j.company.name }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-dark text-white py-1 px-2">{{ j.trade }}</span>
+                                <div class="text-muted small" style="font-size: 0.72rem;">{{ j.vacancies_count }} worker(s) required</div>
+                            </td>
+                            <td>
+                                <div class="small fw-semibold text-dark">{{ j.location_city }}</div>
+                                <div class="text-success small fw-semibold" style="font-size: 0.75rem;">SAR {{ j.salary_monthly_offered }}/mo</div>
+                            </td>
+                            <td class="text-muted small">
+                                {{ j.created_at|date:"M d, Y H:i" }}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'master_job_post_approve' j.id %}" class="btn btn-sm btn-success fw-semibold px-3" onclick="return confirm('Approve and publish job requirement {{ j.title }} to live social feed?');">
+                                        <i class="bi bi-check-lg me-1"></i> Publish
+                                    </a>
+                                    <a href="{% url 'master_job_posts_queue' %}" class="btn btn-sm btn-outline-danger fw-semibold px-2" title="Review & Reject with Note">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold text-dark mt-2 mb-1">Job Posts Queue Clear!</h6>
+                <p class="text-muted small mb-0">No company job requirements are waiting for review.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 3: Referral Links & Anti-Spam Provenance Trail -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-dark text-white px-2 py-1 rounded-pill fw-bold">Audit Provenance</span>
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-shield-check text-success me-1"></i> Live Referral Anti-Spam Monitor (Latest 10)
+                </h6>
+            </div>
+            <a href="{% url 'master_referrals_list' %}" class="btn btn-sm btn-outline-primary fw-semibold">
+                Full Referral Registry ({{ total_referrals_count }}) <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_referrals %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="min-width: 950px;">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Token Snippet</th>
+                            <th>Note / Target</th>
+                            <th>Origin (Created By)</th>
+                            <th>Status</th>
+                            <th>Destination (Redeemed By)</th>
+                            <th>Created</th>
+                            <th class="text-end">Anti-Spam Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for link in recent_referrals %}
+                        <tr>
+                            <td>
+                                <span class="fw-bold font-monospace text-dark" style="font-size: 0.85rem;" title="{{ link.token }}">
+                                    {{ link.token|slice:":12" }}...
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-dark small">{{ link.label_note|default:"Standard Invitation" }}</span>
+                            </td>
+                            <td>
+                                {% if link.created_by_company %}
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2" style="font-size: 0.68rem;">
+                                        <i class="bi bi-building me-1"></i> {{ link.created_by_company.name }}
+                                    </span>
+                                {% elif link.created_by.jobseeker_profile %}
+                                    <span class="badge bg-info-subtle text-dark border border-info-subtle py-1 px-2" style="font-size: 0.68rem;">
+                                        <i class="bi bi-person me-1"></i> {{ link.created_by.jobseeker_profile.full_name }}
+                                    </span>
+                                {% elif link.created_by.is_superuser %}
+                                    <span class="badge bg-warning text-dark py-1 px-2" style="font-size: 0.68rem;">
+                                        <i class="bi bi-shield-lock me-1"></i> Master Admin
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">{{ link.created_by.username }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if link.is_used %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1 px-2 fw-semibold">
+                                        Consumed
+                                    </span>
+                                {% elif link.expires_at and link.expires_at < timezone.now %}
+                                    <span class="badge bg-secondary-subtle text-secondary py-1 px-2 fw-semibold">
+                                        Expired
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-2 fw-semibold">
+                                        Active
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if link.is_used and link.used_by %}
+                                    <div class="fw-bold text-dark small">
+                                        <i class="bi bi-person-check-fill text-success me-1"></i> {{ link.used_by.username }}
+                                    </div>
+                                    {% if link.used_by.jobseeker_profile %}
+                                        <div class="text-muted small" style="font-size: 0.70rem;">
+                                            {{ link.used_by.jobseeker_profile.full_name }} (Iqama: {{ link.used_by.jobseeker_profile.iqama_number }})
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted small">— Unused —</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ link.created_at|date:"M d, Y H:i" }}
+                            </td>
+                            <td class="text-end">
+                                {% if not link.is_used %}
+                                <a href="{% url 'master_referral_revoke' link.id %}" class="btn btn-sm btn-outline-danger py-1 px-2 fw-semibold" onclick="return confirm('⚠️ Anti-Spam Security: Are you sure you want to revoke and delete this invitation link?');" title="Revoke & Invalidate Link Immediately">
+                                    <i class="bi bi-trash me-1"></i> Revoke
+                                </a>
+                                {% else %}
+                                <span class="badge bg-light text-muted border">Self-Destructed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

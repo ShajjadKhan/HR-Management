@@ -84,9 +84,16 @@ urlpatterns = [
     path('jobs/company/', views.company_jobs_list, name='company_jobs_list'),
     path('jobs/company/add/', views.company_job_add, name='company_job_add'),
     path('jobs/company/<int:pk>/applicants/', views.company_job_applicants, name='company_job_applicants'),
+    path('jobs/company/referrals/', views.company_referrals, name='company_referrals'),
     path('jobs/onboard/two-matched/', views.company_two_matched_onboard, name='company_two_matched_onboard'),
 
-    # Master Admin Moderation Queues & 1-Time Referral Traceability
+    # Candidate / Social Peer Referrals
+    path('referrals/invite/', views.candidate_referrals, name='candidate_referrals'),
+
+    # Platform Moderation & Content Safety Hub (No God Mode / Restricted Access)
+    path('master-admin/moderation/', views.moderation_dashboard, name='moderation_dashboard'),
+
+    # Master Admin & Moderator Queues & 1-Time Referral Traceability
     path('master-admin/job-posts/', views.master_job_posts_queue, name='master_job_posts_queue'),
     path('master-admin/job-posts/<int:pk>/approve/', views.master_job_post_approve, name='master_job_post_approve'),
     path('master-admin/job-posts/<int:pk>/reject/', views.master_job_post_reject, name='master_job_post_reject'),
@@ -96,4 +103,6 @@ urlpatterns = [
     path('master-admin/job-seekers/<int:pk>/suspend/', views.master_jobseeker_suspend, name='master_jobseeker_suspend'),
     path('master-admin/referrals/', views.master_referrals_list, name='master_referrals_list'),
     path('master-admin/referrals/generate/', views.master_referral_generate, name='master_referral_generate'),
+    path('master-admin/referrals/<int:pk>/revoke/', views.master_referral_revoke, name='master_referral_revoke'),
 ]
+

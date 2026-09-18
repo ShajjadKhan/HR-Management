@@ -1,6 +1,7 @@
 {% extends 'employees/base.html' %}
 {% block content %}
 <h2>👥 Employees</h2>
+<div class="table-responsive">
 <table class="table table-striped">
     <thead><tr><th>Name</th><th>Position</th><th>Company</th><th>Salary</th><th>Iqama Expiry</th><th>Actions</th></tr></thead>
     <tbody>
@@ -23,4 +24,5 @@
     {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

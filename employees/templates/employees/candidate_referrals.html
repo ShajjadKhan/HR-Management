@@ -1,0 +1,327 @@
+{% extends 'employees/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Top Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-success text-white px-3 py-1 rounded-pill fw-bold">
+                    <i class="bi bi-people-fill me-1"></i> Technician Peer Referral
+                </span>
+                <span class="badge bg-light text-secondary border px-3 py-1 rounded-pill small">
+                    Verified Candidate: {{ profile.full_name }}
+                </span>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Invite a Colleague (دعوة زميل مهني)</h3>
+            <p class="text-muted small mb-0">
+                Help verified skilled workers and technicians join the private manpower network. 
+                Single-use invitation links prevent spam and ensure verified identity provenance.
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'jobs_feed' %}" class="btn btn-outline-primary fw-semibold d-flex align-items-center gap-1">
+                <i class="bi bi-broadcast"></i>
+                <span>Back to Job Feed</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Anti-Spam Security Notice Banner -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: #f8fafc; border-left: 5px solid #2563eb !important;">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex align-items-start gap-3">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 p-md-3 fs-4 flex-shrink-0">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold text-dark mb-1">Anti-Spam & Verified Network Integrity Notice</h6>
+                    <p class="text-muted small mb-0" style="line-height: 1.5;">
+                        • Each invitation you generate is <strong>one-time single-use</strong> and is cryptographically tied to your profile (<code>{{ profile.full_name }}</code>).<br>
+                        • Please only invite qualified, genuine workers (welders, electricians, drivers, technicians) whom you personally know and recommend.<br>
+                        • In order to stop spammers and bulk abuse, each member can hold up to <strong>5 active unused links</strong> at a time.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generator Row -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h6 class="fw-bold text-dark mb-0">
+                <i class="bi bi-person-plus-fill text-success me-1"></i> Generate Colleague Invitation Link
+            </h6>
+            <span class="badge {% if active_unused_count >= 5 %}bg-danger{% else %}bg-success-subtle text-success border border-success-subtle{% endif %} py-1 px-2">
+                {{ active_unused_count }} / 5 Active Links
+            </span>
+        </div>
+        <div class="card-body p-4">
+            {% if active_unused_count < 5 %}
+            <form method="POST" action="{% url 'candidate_referrals' %}" class="row g-3 align-items-end">
+                {% csrf_token %}
+                <div class="col-12 col-md-8">
+                    <label class="form-label small fw-bold text-dark">Who are you inviting? (Optional Note)</label>
+                    <input type="text" name="label_note" class="form-control" placeholder="e.g. Electrician Ali / Welder Tariq" maxlength="150">
+                    <div class="text-muted" style="font-size: 0.72rem;">Helps you and Master Admin recognize who this link was shared with.</div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <button type="submit" class="btn btn-success w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-key-fill"></i>
+                        <span>Generate Single-Use Link</span>
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-warning mb-0 py-2 small d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
+                <div>
+                    <strong>Anti-Spam Quota Reached:</strong> You currently have 5 unused invitation links. Once your colleagues redeem them, you will be able to generate more.
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Newly Generated Link Card -->
+    {% if newly_link %}
+    <div class="card border-0 shadow rounded-4 mb-4 bg-success bg-opacity-10 border-success border-2" id="newlyCard">
+        <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h6 class="fw-bold text-success mb-0">
+                <i class="bi bi-stars me-1"></i> Invitation Ready to Share!
+            </h6>
+            <button type="button" class="btn-close" onclick="document.getElementById('newlyCard').remove()"></button>
+        </div>
+        <div class="card-body px-4 pb-4 pt-2">
+            <div class="bg-white p-3 rounded-3 shadow-sm border border-success-subtle">
+                <label class="form-label small fw-bold text-dark mb-1">Registration Link (Single-Use):</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control font-monospace bg-light" readonly value="{{ host }}/register/?ref={{ newly_link.token }}">
+                    <button type="button" class="btn btn-primary fw-semibold copy-btn" data-copy="{{ host }}/register/?ref={{ newly_link.token }}" data-success="Link Copied!">
+                        <i class="bi bi-clipboard me-1"></i> Copy Link
+                    </button>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between pt-2 border-top">
+                    <span class="text-muted small">
+                        <i class="bi bi-clock-history me-1"></i> Valid for 14 days. Self-destructs after registration.
+                    </span>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-success fw-semibold copy-btn" 
+                                data-copy="Hello brother! I invite you to join our verified technician network for direct contracting jobs: {{ host }}/register/?ref={{ newly_link.token }} (Invited by {{ profile.full_name }})"
+                                data-success="WhatsApp Text Copied!">
+                            <i class="bi bi-whatsapp me-1 text-success"></i> Copy WhatsApp Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- My Invites Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h6 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-card-checklist text-primary me-1"></i> My Colleague Invites ({{ links.count }})
+            </h6>
+            <span class="badge bg-light text-secondary border">Single-Use Tracked</span>
+        </div>
+        <div class="card-body p-0">
+            {% if links %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="min-width: 750px;">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Token & Link</th>
+                            <th>Note</th>
+                            <th>Status</th>
+                            <th>Redeemed By Colleague</th>
+                            <th>Created</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for link in links %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark font-monospace" style="font-size: 0.85rem;">
+                                    {{ link.token|slice:":12" }}...
+                                </div>
+                                <div class="text-muted small" style="font-size: 0.72rem;">
+                                    <code>/register/?ref={{ link.token|slice:":16" }}...</code>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-dark">{{ link.label_note|default:"Colleague Invitation" }}</span>
+                            </td>
+                            <td>
+                                {% if link.is_used %}
+                                    <span class="badge bg-success text-white py-1 px-2 fw-semibold">
+                                        <i class="bi bi-check2-circle me-1"></i> Registered & Redeemed
+                                    </span>
+                                {% elif link.expires_at and link.expires_at < timezone.now %}
+                                    <span class="badge bg-secondary py-1 px-2 fw-semibold">Expired</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark py-1 px-2 fw-semibold">
+                                        <i class="bi bi-hourglass-split me-1"></i> Active (Waiting for Colleague)
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if link.is_used and link.used_by %}
+                                    <div class="fw-bold text-dark small">
+                                        <i class="bi bi-person-check-fill text-success me-1"></i>
+                                        {{ link.used_by.username }}
+                                    </div>
+                                    {% if link.used_by.jobseeker_profile %}
+                                        <div class="text-muted small" style="font-size: 0.72rem;">
+                                            {{ link.used_by.jobseeker_profile.full_name }} ({{ link.used_by.jobseeker_profile.trade }})
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted small">— Not redeemed yet —</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ link.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="text-end">
+                                {% if not link.is_used %}
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold copy-btn" data-copy="{{ host }}/register/?ref={{ link.token }}" data-success="Link Copied!">
+                                    <i class="bi bi-clipboard me-1"></i> Copy Link
+                                </button>
+                                {% else %}
+                                <span class="badge bg-light text-muted border">Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people text-muted" style="font-size: 3.5rem;"></i>
+                <h5 class="fw-bold text-dark mt-3 mb-1">No Colleagues Invited Yet</h5>
+                <p class="text-muted small mb-0">Use the form above to invite fellow workers to the verified manpower network.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast Notification for Copy Actions -->
+<div id="copyToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1090; display: none;">
+    <div class="toast align-items-center text-white bg-dark border-0 shadow-lg show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2 py-2 px-3">
+                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                <span id="copyToastMsg" class="fw-semibold small">Copied to clipboard!</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="document.getElementById('copyToast').style.display='none'"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let toastTimer = null;
+    function showToast(message) {
+        const toastContainer = document.getElementById('copyToast');
+        const toastMsg = document.getElementById('copyToastMsg');
+        if (!toastContainer || !toastMsg) return;
+        toastMsg.textContent = message || 'Copied to clipboard!';
+        toastContainer.style.display = 'block';
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toastContainer.style.display = 'none';
+        }, 2500);
+    }
+
+    function copyToClipboard(text, btnElement, successText) {
+        if (!text) return;
+
+        function notifySuccess() {
+            const displayMsg = successText || 'Copied!';
+            showToast(displayMsg);
+            if (btnElement) {
+                if (!btnElement.hasAttribute('data-original-html')) {
+                    btnElement.setAttribute('data-original-html', btnElement.innerHTML);
+                    btnElement.setAttribute('data-original-class', btnElement.className);
+                }
+                const originalHtml = btnElement.getAttribute('data-original-html');
+                const originalClass = btnElement.getAttribute('data-original-class');
+
+                btnElement.className = 'btn btn-sm btn-success py-1 px-2 fw-semibold';
+                btnElement.innerHTML = `<i class="bi bi-check-lg me-1"></i> ${displayMsg}`;
+
+                setTimeout(() => {
+                    btnElement.className = originalClass;
+                    btnElement.innerHTML = originalHtml;
+                }, 2000);
+            }
+        }
+
+        function fallbackCopy(str) {
+            let success = false;
+            const textArea = document.createElement("textarea");
+            textArea.value = str;
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "-9999px";
+            textArea.style.width = "2em";
+            textArea.style.height = "2em";
+            textArea.style.padding = "0";
+            textArea.style.border = "none";
+            textArea.style.outline = "none";
+            textArea.style.boxShadow = "none";
+            textArea.style.background = "transparent";
+            textArea.style.opacity = "0";
+            textArea.setAttribute("readonly", "");
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            if (textArea.setSelectionRange) {
+                textArea.setSelectionRange(0, textArea.value.length);
+            }
+
+            try {
+                success = document.execCommand('copy');
+            } catch (e) {
+                success = false;
+            }
+            document.body.removeChild(textArea);
+
+            if (success) {
+                notifySuccess();
+            } else {
+                window.prompt("Copy this to clipboard (Ctrl+C or Cmd+C):", str);
+            }
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text)
+                .then(notifySuccess)
+                .catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.copy-btn');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const textToCopy = btn.getAttribute('data-copy') || btn.getAttribute('data-url');
+            const successText = btn.getAttribute('data-success') || 'Copied!';
+            if (textToCopy) {
+                copyToClipboard(textToCopy, btn, successText);
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

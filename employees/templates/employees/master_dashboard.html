@@ -15,9 +15,9 @@
     </a>
 </div>
 
-<!-- KPI Metrics (5 Columns on Desktop, 2x2 Grid on Mobile) -->
-<div class="row g-2 g-md-3 mb-3">
-    <div class="col-6 col-md-3 col-xl">
+<!-- KPI Metrics (5 Columns on Desktop, Responsive Grid on Mobile) -->
+<div class="row g-2 g-md-3 mb-3 row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-xl-5">
+    <div class="col">
         <div class="card p-3 h-100 border-start border-4 border-primary">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -31,12 +31,12 @@
             <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">{{ active_companies }} active clients</small>
         </div>
     </div>
-    <div class="col-6 col-md-3 col-xl">
+    <div class="col">
         <div class="card p-3 h-100 border-start border-4 border-success">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="text-muted text-uppercase" style="font-size: 0.68rem; font-weight: 700;">Subscription Revenue</div>
-                    <h4 class="fw-bold mb-0 mt-1 text-success">SAR {{ total_subscription_revenue|floatformat:0 }}</h4>
+                    <h4 class="fw-bold mb-0 mt-1 text-success text-truncate">SAR {{ total_subscription_revenue|floatformat:0 }}</h4>
                 </div>
                 <div class="bg-success bg-opacity-10 text-success p-2 rounded-circle d-none d-sm-flex">
                     <i class="bi bi-cash-coin fs-5"></i>
@@ -45,7 +45,7 @@
             <small class="text-success d-block mt-1" style="font-size: 0.72rem;">Active client contracts</small>
         </div>
     </div>
-    <div class="col-6 col-md-3 col-xl">
+    <div class="col">
         <div class="card p-3 h-100 border-start border-4 border-warning">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -59,7 +59,7 @@
             <small class="text-warning d-block mt-1" style="font-size: 0.72rem;">&lt; 30 days left</small>
         </div>
     </div>
-    <div class="col-6 col-md-3 col-xl">
+    <div class="col">
         <div class="card p-3 h-100 border-start border-4 border-danger">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -73,7 +73,7 @@
             <small class="text-danger d-block mt-1" style="font-size: 0.72rem;">Renewal required</small>
         </div>
     </div>
-    <div class="col-12 col-md-3 col-xl">
+    <div class="col">
         <div class="card p-3 h-100 border-start border-4 border-info">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -104,7 +104,7 @@
     <div class="row g-2">
         {% for rem in renewal_reminders %}
         <div class="col-md-6 col-lg-4">
-            <div class="p-2 bg-white rounded-2 border {% if rem.is_subscription_expired %}border-danger{% else %}border-warning{% endif %} d-flex justify-content-between align-items-center shadow-xs">
+            <div class="p-2 bg-white rounded-2 border {% if rem.is_subscription_expired %}border-danger{% else %}border-warning{% endif %} d-flex flex-wrap justify-content-between align-items-center gap-2 shadow-xs">
                 <div>
                     <a href="{% url 'master_company_edit' rem.id %}" class="fw-bold text-dark text-decoration-none d-block small">
                         {{ rem.name }}
@@ -174,7 +174,7 @@
 
 <!-- MOBILE VIEW: Touch-Friendly Cards (Visible on screens < 768px) -->
 <div class="d-md-none">
-    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 px-1">
         <span class="fw-bold small text-muted text-uppercase">Contracting Companies ({{ companies.count }})</span>
     </div>
 
@@ -325,7 +325,7 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" style="min-width: 950px;">
             <thead class="table-light">
                 <tr>
                     <th>Company / CR</th>
@@ -422,7 +422,7 @@
                             </a>
 
                             <!-- Dropdown for more options -->
-                            <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}'></button>
                             <ul class="dropdown-menu dropdown-menu-end shadow">
                                 <li>
                                     <a class="dropdown-item" href="{% url 'master_company_edit' comp.id %}">

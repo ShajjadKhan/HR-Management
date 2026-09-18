@@ -4,7 +4,7 @@
 {% block content %}
 <div class="card p-4 mx-auto shadow-sm" style="max-width: 760px;">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
             <h4 class="fw-bold m-0 text-dark">
                 <i class="bi bi-briefcase-fill text-primary me-2"></i>{% if client %}Edit Client Company: {{ client.name }}{% else %}Register New Client Company{% endif %}

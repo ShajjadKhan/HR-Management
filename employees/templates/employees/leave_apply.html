@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="card p-4 mx-auto shadow-sm" style="max-width: 650px;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <h4 class="fw-bold m-0"><i class="bi bi-calendar-plus text-primary me-2"></i>Apply for Leave</h4>
         <a href="{% url 'leave_list' %}" class="btn btn-outline-secondary btn-sm">Cancel</a>
     </div>
@@ -27,7 +27,7 @@
                 <label class="form-label small fw-bold text-muted">Leave Type *</label>
                 {{ form.leave_type }}
             </div>
-            <div class="col-md-6 d-flex align-items-center mt-4">
+            <div class="col-md-6 d-flex align-items-center mt-2 mt-md-4">
                 <div class="form-check">
                     {{ form.is_half_day }}
                     <label class="form-check-label fw-semibold small" for="{{ form.is_half_day.id_for_label }}">

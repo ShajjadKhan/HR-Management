@@ -33,27 +33,27 @@
     </div>
 
     <!-- Status Filter Pills -->
-    <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm border">
+    <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm border flex-nowrap overflow-x-auto" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'pending_approval' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=pending_approval">
+            <a class="nav-link text-nowrap {% if status_filter == 'pending_approval' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=pending_approval">
                 <i class="bi bi-hourglass-split me-1"></i> Pending Verification
                 <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'active' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=active">
+            <a class="nav-link text-nowrap {% if status_filter == 'active' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=active">
                 <i class="bi bi-patch-check-fill me-1"></i> Verified & Active
                 <span class="badge bg-success ms-1">{{ active_count }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'hired' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=hired">
+            <a class="nav-link text-nowrap {% if status_filter == 'hired' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=hired">
                 <i class="bi bi-award-fill me-1"></i> Hired by Company
                 <span class="badge bg-info ms-1">{{ hired_count }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'all' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=all">
+            <a class="nav-link text-nowrap {% if status_filter == 'all' %}active fw-bold{% endif %}" href="{% url 'master_jobseekers_queue' %}?status=all">
                 <i class="bi bi-people-fill me-1"></i> All Candidates
             </a>
         </li>
@@ -70,7 +70,7 @@
         <div class="card-body p-0">
             {% if candidates %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" style="min-width: 900px;">
                     <thead class="table-light small">
                         <tr>
                             <th>Candidate Identity</th>

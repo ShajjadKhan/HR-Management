@@ -26,7 +26,7 @@
     <!-- Commercial & Deployment KPI Cards -->
     <div class="row g-3 mb-4">
         <!-- 1. Active Clients -->
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-6 col-md-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-primary border-4 h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -42,7 +42,7 @@
         </div>
 
         <!-- 2. Deployed Workers -->
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-6 col-md-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-success border-4 h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -59,12 +59,12 @@
             </div>
         </div>
 
-        <!-- 3. Unemployed / Bench Pool -->
-        <div class="col-sm-6 col-xl-3">
+        <!-- 3. Standby Workers -->
+        <div class="col-6 col-md-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-warning border-4 h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase">Unemployed / Bench Pool</div>
+                        <div class="text-muted small fw-bold text-uppercase">Standby (Unassigned)</div>
                         <div class="fs-3 fw-bold text-warning mt-1">{{ unemployed_count }}</div>
                     </div>
                     <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3">
@@ -72,13 +72,13 @@
                     </div>
                 </div>
                 <div class="small text-danger fw-semibold mt-2">
-                    <i class="bi bi-fire me-1"></i>SAR {{ total_bench_burn|floatformat:2 }} salary burn/mo
+                    <i class="bi bi-clock-history me-1"></i>SAR {{ total_bench_burn|floatformat:2 }}/mo idle payroll
                 </div>
             </div>
         </div>
 
         <!-- 4. Deployment Rate -->
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-6 col-md-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-3 p-3 bg-light border-start border-info border-4 h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -96,18 +96,18 @@
         </div>
     </div>
 
-    <!-- Navigation Tabs (Clients vs Bench Pool) -->
-    <ul class="nav nav-pills mb-4 border-bottom pb-2 gap-2" id="clientTabs" role="tablist">
+    <!-- Navigation Tabs (Clients vs Standby Workers) -->
+    <ul class="nav nav-pills mb-4 border-bottom pb-2 gap-2 flex-nowrap overflow-x-auto" id="clientTabs" role="tablist" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
         <li class="nav-item" role="presentation">
-            <a class="nav-link {% if active_tab != 'bench' %}active fw-bold{% endif %}" href="?tab=clients">
+            <a class="nav-link text-nowrap {% if active_tab != 'bench' %}active fw-bold{% endif %}" href="?tab=clients">
                 <i class="bi bi-buildings me-1"></i> Client Companies & Sites ({{ clients.count }})
             </a>
         </li>
         <li class="nav-item" role="presentation">
-            <a class="nav-link {% if active_tab == 'bench' %}active fw-bold bg-warning text-dark{% else %}text-danger fw-semibold{% endif %}" href="?tab=bench">
-                <i class="bi bi-person-dash me-1"></i> Unemployed / Bench Pool
+            <a class="nav-link text-nowrap {% if active_tab == 'bench' %}active fw-bold bg-warning text-dark{% else %}text-secondary fw-semibold{% endif %}" href="?tab=bench">
+                <i class="bi bi-person-dash me-1"></i> Available Standby Workers
                 {% if unemployed_count > 0 %}
-                    <span class="badge {% if active_tab == 'bench' %}bg-dark text-white{% else %}bg-danger text-white{% endif %} ms-1">{{ unemployed_count }}</span>
+                    <span class="badge {% if active_tab == 'bench' %}bg-dark text-white{% else %}bg-warning text-dark{% endif %} ms-1">{{ unemployed_count }}</span>
                 {% endif %}
             </a>
         </li>
@@ -196,7 +196,7 @@
 
     <!-- Desktop Table (>= 992px) -->
     <div class="table-responsive d-none d-lg-block">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" style="min-width: 860px;">
             <thead class="table-light">
                 <tr>
                     <th class="lang-text" data-en="Client Company" data-ar="شركة العميل">Client Company</th>
@@ -309,19 +309,19 @@
     {% endif %}
 
 
-    <!-- TAB 2: UNEMPLOYED / BENCH WORKERS POOL -->
+    <!-- TAB 2: AVAILABLE STANDBY WORKERS POOL -->
     {% if active_tab == 'bench' %}
     <div>
         <!-- Notice Callout -->
         <div class="alert alert-warning border-warning border-opacity-25 shadow-sm d-flex align-items-start gap-3 mb-4 p-3 rounded-3">
-            <i class="bi bi-exclamation-triangle-fill text-warning fs-3 mt-1"></i>
+            <i class="bi bi-person-exclamation text-warning fs-3 mt-1"></i>
             <div>
-                <h6 class="fw-bold mb-1">Unemployed / Bench Workers Pool (عمالة بدون مشروع / على قائمة الانتظار)</h6>
+                <h6 class="fw-bold mb-1">Available Standby Workers (عمالة على قائمة الانتظار)</h6>
                 <p class="small mb-1">
-                    These <strong>{{ unemployed_count }}</strong> workers are currently not deployed to any client company. 
-                    They continue to incur basic salary expenses (<strong>SAR {{ total_bench_burn|floatformat:2 }}/month</strong>) without generating client billing revenue.
+                    These <strong>{{ unemployed_count }}</strong> workers are currently unassigned to any client site. 
+                    They incur base monthly salaries (<strong>SAR {{ total_bench_burn|floatformat:2 }}/month</strong>) and are available for immediate client deployment.
                 </p>
-                <small class="text-muted">Click <strong>"Deploy to Client"</strong> to assign any bench worker to an active client project.</small>
+                <small class="text-muted">Click <strong>"Deploy to Client"</strong> to assign any standby worker to an active client project.</small>
             </div>
         </div>
 
@@ -368,7 +368,7 @@
             {% empty %}
             <div class="text-center py-4 text-muted bg-light rounded-3 mb-3">
                 <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
-                <h6 class="text-success fw-bold">Zero Bench! All workers are actively deployed.</h6>
+                <h6 class="text-success fw-bold">100% Deployed! No unassigned standby workers.</h6>
                 <p class="small text-muted mb-0">Every worker in <strong>{{ company.name }}</strong> is currently assigned to an active client project.</p>
             </div>
             {% endfor %}
@@ -376,7 +376,7 @@
 
         <!-- Desktop Table (>= 992px) -->
         <div class="table-responsive d-none d-lg-block">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" style="min-width: 860px;">
                 <thead class="table-light">
                     <tr>
                         <th class="lang-text" data-en="Worker Name" data-ar="اسم العامل">Worker</th>
@@ -458,7 +458,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted bg-light rounded-3">
                             <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
-                            <h5 class="text-success fw-bold">Zero Bench! All workers are actively deployed.</h5>
+                            <h5 class="text-success fw-bold">100% Deployed! No unassigned standby workers.</h5>
                             <p class="small text-muted mb-0">Every worker in <strong>{{ company.name }}</strong> is currently assigned to an active client project.</p>
                         </td>
                     </tr>
@@ -487,7 +487,7 @@
                         <div class="modal-body p-3 p-md-4">
                             <div class="alert alert-light border small mb-3">
                                 Worker: <strong>{{ worker.name }}</strong> ({{ worker.position }})<br>
-                                Current Status: <span class="badge bg-warning text-dark">Unemployed / Bench</span>
+                                Current Status: <span class="badge bg-warning text-dark">Standby / Unassigned</span>
                             </div>
 
                             <div class="mb-3">

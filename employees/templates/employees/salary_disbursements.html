@@ -52,7 +52,7 @@
 <!-- Financial Summary & KPI Cards -->
 <div class="row g-3 mb-4">
     <!-- Total Payroll Budget -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-md-6 col-xl-3">
         <div class="card p-3 h-100 border-start border-4 border-primary shadow-sm">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -70,7 +70,7 @@
     </div>
 
     <!-- Advances Collected / Deducted -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-md-6 col-xl-3">
         <div class="card p-3 h-100 border-start border-4 border-danger shadow-sm">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -88,7 +88,7 @@
     </div>
 
     <!-- Total Net Disbursed -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-md-6 col-xl-3">
         <div class="card p-3 h-100 border-start border-4 border-success shadow-sm">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -108,7 +108,7 @@
     </div>
 
     <!-- Net Pending Rest -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-6 col-md-6 col-xl-3">
         <div class="card p-3 h-100 border-start border-4 border-warning shadow-sm">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -196,7 +196,7 @@
         {% for item in roster_items %}
         <div class="card mb-3 border shadow-sm rounded-3 overflow-hidden {% if item.is_paid %}border-success-subtle bg-white{% else %}border-light-subtle bg-white{% endif %}">
             <!-- Mobile Card Header: Serial, Iqama, Status -->
-            <div class="card-header bg-light bg-opacity-75 py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="card-header bg-light bg-opacity-75 py-2 px-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-secondary bg-opacity-15 text-secondary border px-2 py-1 fw-bold">#{{ item.serial }}</span>
                     <span class="small text-muted font-monospace"><i class="bi bi-person-badge me-1"></i>{{ item.employee.iqama_number|default:"-" }}</span>
@@ -309,7 +309,7 @@
 
     <!-- DESKTOP VIEW (TABLE): Displayed on larger screens (>= 992px) -->
     <div class="table-responsive d-none d-lg-block">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" style="min-width: 980px;">
             <thead class="table-light">
                 <tr>
                     <th style="width: 50px;" class="text-center">#</th>

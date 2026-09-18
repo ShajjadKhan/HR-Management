@@ -99,6 +99,17 @@ def company_required(view_func):
         request.company = company
         request.is_master_admin = False
         request.is_impersonating = False
+
+        # Security check for Platform Moderator (staff without superuser):
+        # Platform moderators have limited moderation access and CANNOT roam into tenant data (No God Mode).
+        if request.user.is_staff and not request.user.is_superuser:
+            messages.error(
+                request,
+                "🔒 Customer Data Protection: Platform Moderators cannot access customer workspaces. "
+                "Your role is restricted to safety and content moderation."
+            )
+            return redirect('moderation_dashboard')
+
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
@@ -107,6 +118,7 @@ def company_required(view_func):
 def master_admin_required(view_func):
     """
     Restricts access strictly to the SaaS Master Administrator (superuser).
+    Includes full system oversight, subscription billing, and Supreme Mode.
     """
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
@@ -118,3 +130,21 @@ def master_admin_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
+
+
+def moderator_required(view_func):
+    """
+    Allows Master Administrators (superusers) AND Platform Moderators (staff).
+    Strictly forbids access to company financials or supreme mode ("No God Mode").
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        if not (request.user.is_superuser or request.user.is_staff):
+            messages.error(request, "Access restricted. You do not have moderation permissions.")
+            return redirect('dashboard')
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
+

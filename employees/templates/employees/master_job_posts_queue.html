@@ -33,21 +33,21 @@
     </div>
 
     <!-- Status Navigation Pills -->
-    <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm border">
+    <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm border flex-nowrap overflow-x-auto" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'pending_approval' %}active fw-bold{% endif %}" href="{% url 'master_job_posts_queue' %}?status=pending_approval">
+            <a class="nav-link text-nowrap {% if status_filter == 'pending_approval' %}active fw-bold{% endif %}" href="{% url 'master_job_posts_queue' %}?status=pending_approval">
                 <i class="bi bi-clock-history me-1"></i> Pending Approval
                 <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'published' %}active fw-bold{% endif %}" href="{% url 'master_job_posts_queue' %}?status=published">
+            <a class="nav-link text-nowrap {% if status_filter == 'published' %}active fw-bold{% endif %}" href="{% url 'master_job_posts_queue' %}?status=published">
                 <i class="bi bi-check2-circle me-1"></i> Published
                 <span class="badge bg-success ms-1">{{ published_count }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if status_filter == 'all' %}active fw-bold{% endif %}" href="{% url 'master_job_posts_queue' %}?status=all">
+            <a class="nav-link text-nowrap {% if status_filter == 'all' %}active fw-bold{% endif %}" href="{% url 'master_job_posts_queue' %}?status=all">
                 <i class="bi bi-list-ul me-1"></i> All Postings
             </a>
         </li>

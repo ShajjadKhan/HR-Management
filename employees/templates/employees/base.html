@@ -146,6 +146,7 @@
             border-color: #1e293b !important;
         }
 
+        [data-bs-theme="dark"] .top-context-header,
         [data-bs-theme="dark"] .top-nav-tabs-bar {
             background-color: #0f172a !important;
             border-color: #1e293b !important;
@@ -278,9 +279,9 @@
 
         /* Master Admin Top Banner */
         .master-banner {
-            background: linear-gradient(90deg, #d97706, #b45309);
+            border-radius: 10px;
             color: white;
-            padding: 8px 16px;
+            padding: 10px 16px;
             font-size: 0.85rem;
             font-weight: 500;
         }
@@ -291,7 +292,7 @@
             color: var(--sidebar-text);
             display: flex;
             flex-direction: column;
-            padding: 1.25rem 0.85rem;
+            padding: 1.25rem 0.85rem 2.5rem;
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
             z-index: 1040;
             box-sizing: border-box;
@@ -319,9 +320,11 @@
                 max-height: 100vh !important;
                 overflow-y: auto !important;
                 -webkit-overflow-scrolling: touch;
+                padding-bottom: 3.5rem !important;
+                z-index: 1055 !important;
             }
             .main-content {
-                padding: 1rem 0.75rem !important;
+                padding: 1rem 0.75rem 2.5rem !important;
                 width: 100% !important;
                 max-width: 100% !important;
             }
@@ -343,14 +346,49 @@
                 max-height: 100vh !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
+                padding-bottom: 2.5rem !important;
             }
             .main-content {
                 flex: 1 1 0 !important;
                 min-width: 0 !important;
                 width: calc(100% - 260px) !important;
                 max-width: calc(100% - 260px) !important;
-                padding: 1.75rem 2rem !important;
+                padding: 1.25rem 1.5rem 3rem !important;
             }
+        }
+
+        @media (min-width: 1200px) {
+            .main-content {
+                padding: 1.75rem 2rem 3.5rem !important;
+            }
+        }
+
+        /* Prevent table column compression and cutoff */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+        }
+        .table-responsive > .table {
+            min-width: 780px;
+            margin-bottom: 0;
+        }
+        .table-responsive .dropdown-menu {
+            z-index: 1060 !important;
+        }
+
+        /* Dark mode overrides for inline tinted backgrounds */
+        [data-bs-theme="dark"] [style*="background: #fff5f5"],
+        [data-bs-theme="dark"] [style*="background: #fffdf5"],
+        [data-bs-theme="dark"] [style*="background-color: #fffdf5"],
+        [data-bs-theme="dark"] [style*="background-color: #fffbeb"] {
+            background: #1c1917 !important;
+            border-color: #78350f !important;
+            color: #fef08a !important;
+        }
+        [data-bs-theme="dark"] [style*="background-color: #f8fafc"] {
+            background-color: #131b2e !important;
+            border-color: #1e293b !important;
         }
 
         .brand-header {
@@ -535,7 +573,7 @@
             }
             .input-group-sm .form-control, .input-group-sm .form-select {
                 min-height: 38px;
-                font-size: 14px !important;
+                font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
             }
             .top-nav-tabs-bar {
                 padding: 0.4rem 0.6rem !important;
@@ -564,6 +602,18 @@
             .card {
                 border-radius: 12px;
             }
+            .card.p-4 {
+                padding: 1rem !important;
+            }
+            .card.p-5 {
+                padding: 1.15rem !important;
+            }
+            .card-body.p-4 {
+                padding: 1rem !important;
+            }
+            .card-body.p-5 {
+                padding: 1.15rem !important;
+            }
         }
 
         /* RTL styling for Arabic */
@@ -579,87 +629,38 @@
 
     <!-- Mobile Header (Optimized for all phone screens >= 320px) -->
     <div class="mobile-header d-flex justify-content-between align-items-center d-md-none">
-        <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1 1 auto;">
-            <button class="btn btn-dark p-0 d-flex align-items-center justify-content-center flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarNav" aria-controls="sidebarNav" aria-label="Toggle navigation" style="width: 40px; height: 40px; border-radius: 8px; background: #1e293b; border: 1px solid #334155;">
+        <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1 1 auto; overflow: hidden;">
+            <button class="btn btn-dark p-0 d-flex align-items-center justify-content-center flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarNav" aria-controls="sidebarNav" aria-label="Toggle navigation" style="width: 38px; height: 38px; border-radius: 8px; background: #1e293b; border: 1px solid #334155;">
                 <i class="bi bi-list fs-2 text-white"></i>
             </button>
-            <div class="fw-bold text-truncate" style="font-size: 0.92rem;">
+            <div class="fw-bold text-truncate" style="font-size: 0.88rem; min-width: 0; flex: 1 1 auto;">
                 {% if is_master_admin and not is_supreme_mode %}
-                    <span class="text-warning"><i class="bi bi-shield-shaded me-1"></i>Master Admin</span>
+                    <span class="text-warning text-truncate d-block"><i class="bi bi-shield-shaded me-1"></i>Master Admin</span>
                 {% elif is_master_admin and is_supreme_mode %}
-                    <span class="text-danger text-truncate d-inline-block"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supreme: {{ current_company.name }}</span>
+                    <span class="text-danger text-truncate d-block" title="Supreme: {{ current_company.name }}"><i class="bi bi-exclamation-triangle-fill me-1"></i>Supreme: {{ current_company.name }}</span>
                 {% elif current_company %}
-                    <span class="text-truncate d-inline-block"><i class="bi bi-building me-1 text-primary"></i>{{ current_company.name }}</span>
+                    <span class="text-truncate d-block text-white" title="{{ current_company.name }}"><i class="bi bi-building me-1 text-primary"></i>{{ current_company.name }}</span>
                 {% else %}
-                    <span>HR SaaS</span>
+                    <span class="text-white">HR SaaS</span>
                 {% endif %}
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+        <div class="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
             {% if not is_master_admin or is_supreme_mode %}
-            <a href="{% url 'salary_disbursements' %}" class="btn btn-sm btn-primary py-1 px-2 text-white fw-bold d-flex align-items-center gap-1 shadow-sm" title="Salary Disbursements" style="min-height: 36px;">
+            <a href="{% url 'salary_disbursements' %}" class="btn btn-sm btn-primary p-0 d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" title="Salary Disbursements" style="width: 34px; height: 34px; border-radius: 8px;">
                 <i class="bi bi-cash-stack"></i>
-                <span class="small d-none d-sm-inline">Payroll</span>
             </a>
             {% endif %}
-            <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="width: 36px; height: 36px; border-radius: 8px; background: #1e293b; border: 1px solid #334155; color: #f1f5f9;">
-                <i class="bi bi-moon-stars-fill theme-icon-dark fs-6"></i>
-                <i class="bi bi-sun-fill theme-icon-light d-none text-warning fs-6"></i>
+            <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center flex-shrink-0" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="width: 34px; height: 34px; border-radius: 8px; background: #1e293b; border: 1px solid #334155; color: #f1f5f9;">
+                <i class="bi bi-moon-stars-fill theme-icon-dark" style="font-size: 0.85rem;"></i>
+                <i class="bi bi-sun-fill theme-icon-light d-none text-warning" style="font-size: 0.85rem;"></i>
             </button>
-            <button class="lang-switch-btn" onclick="toggleLanguage()" title="Toggle English/Arabic" style="min-height: 36px; padding: 4px 8px; font-weight: 600;">EN/عربي</button>
-            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger p-0 d-flex align-items-center justify-content-center" title="Logout" style="width: 36px; height: 36px; border-radius: 8px;">
-                <i class="bi bi-box-arrow-right fs-5"></i>
+            <button class="lang-switch-btn flex-shrink-0" onclick="toggleLanguage()" title="Toggle English/Arabic" style="height: 34px; padding: 2px 7px; font-size: 0.76rem; font-weight: 600;">EN/عربي</button>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger p-0 d-flex align-items-center justify-content-center flex-shrink-0" title="Logout" style="width: 34px; height: 34px; border-radius: 8px;">
+                <i class="bi bi-box-arrow-right fs-6"></i>
             </a>
         </div>
     </div>
-
-    <!-- Master Admin: Normal Status Bar (Customer Data Protected) -->
-    {% if is_master_admin and not is_supreme_mode %}
-    <div class="master-banner d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2" style="background: linear-gradient(90deg, #0f172a, #1e293b); border-bottom: 1px solid #334155;">
-        <div class="d-flex align-items-center gap-2 text-truncate w-100">
-            <i class="bi bi-shield-check fs-5 text-success"></i>
-            <div class="text-truncate">
-                <strong class="text-warning">Master Platform Control</strong>
-                <span class="text-light opacity-75 small ms-2 d-none d-sm-inline">— Customer Workspaces Locked (Data Protected)</span>
-            </div>
-        </div>
-        <div class="d-flex align-items-center gap-2 w-100 w-sm-auto justify-content-end">
-            <button type="button" class="theme-toggle-btn btn btn-sm btn-outline-light py-1 px-2 d-flex align-items-center gap-1" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="min-height: 32px; border-radius: 6px;">
-                <i class="bi bi-moon-stars-fill theme-icon-dark"></i>
-                <i class="bi bi-sun-fill theme-icon-light d-none text-warning"></i>
-                <span class="small theme-text">Dark</span>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning py-1 px-3 fw-semibold text-nowrap d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#supremeModeModal">
-                <i class="bi bi-shield-lock-fill"></i> Supreme Mode: Locked
-            </button>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Master Admin: Supreme Support Mode Warning Banner (Customer Workspace Active) -->
-    {% if is_master_admin and is_supreme_mode %}
-    <div class="alert alert-danger mb-0 py-2 px-3 border-0 rounded-0 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 shadow" style="background: #991b1b; color: white;">
-        <div class="d-flex align-items-center gap-2 text-truncate">
-            <div class="spinner-grow spinner-grow-sm text-warning flex-shrink-0" role="status"></div>
-            <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
-            <div class="text-truncate">
-                <strong class="text-warning">👑 SUPREME SUPPORT MODE:</strong>
-                <span>Operating inside customer workspace: <strong>{{ current_company.name }}</strong> (CR: {{ current_company.cr_number|default:"N/A" }})</span>
-                {% if supreme_mode_reason %}
-                    <span class="d-none d-lg-inline text-light opacity-90 ms-2">• Reason: <em>{{ supreme_mode_reason }}</em></span>
-                {% endif %}
-            </div>
-        </div>
-        <div class="d-flex align-items-center gap-2 flex-shrink-0">
-            <a href="{% url 'master_dashboard' %}" class="btn btn-sm btn-outline-light py-1 px-2 fw-semibold text-nowrap">
-                Master Dashboard
-            </a>
-            <a href="{% url 'supreme_mode_exit' %}" class="btn btn-sm btn-light text-danger fw-bold shadow-sm text-nowrap">
-                <i class="bi bi-lock-fill me-1"></i> Lock & Exit Supreme Mode
-            </a>
-        </div>
-    </div>
-    {% endif %}
 
     <div class="container-fluid p-0">
         <div class="row g-0 app-layout-row">
@@ -695,6 +696,25 @@
                             </span>
                             <span class="badge {% if current_company.is_active %}bg-success{% else %}bg-danger{% endif %} text-white flex-shrink-0" style="font-size: 0.7rem;">
                                 {% if current_company.is_active %}Active{% else %}Suspended{% endif %}
+                            </span>
+                        </div>
+                    {% elif is_jobseeker %}
+                        <div class="brand-topline">
+                            <div class="brand-title-wrap">
+                                <h5><i class="bi bi-person-badge-fill text-primary flex-shrink-0"></i> <span class="brand-title-text">{{ jobseeker_profile.full_name|default:request.user.username }}</span></h5>
+                                <small class="text-muted d-block text-truncate mt-1">{{ jobseeker_profile.trade|default:"Technician" }}</small>
+                            </div>
+                            <div class="brand-actions" aria-label="Display controls">
+                                <button class="theme-toggle-btn btn btn-sm p-0 d-flex align-items-center justify-content-center brand-action-btn" onclick="toggleTheme()" title="Toggle Day/Dark Mode">
+                                    <i class="bi bi-moon-stars-fill theme-icon-dark" style="font-size: 0.8rem;"></i>
+                                    <i class="bi bi-sun-fill theme-icon-light d-none text-warning" style="font-size: 0.8rem;"></i>
+                                </button>
+                                <button class="lang-switch-btn brand-lang-btn" onclick="toggleLanguage()" title="Toggle English/Arabic">EN/عربي</button>
+                            </div>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between align-items-center gap-2">
+                            <span class="badge {% if jobseeker_profile.status == 'active' %}bg-success{% elif jobseeker_profile.status == 'pending_approval' %}bg-warning text-dark{% else %}bg-secondary{% endif %} text-white flex-shrink-0" style="font-size: 0.68rem;">
+                                {{ jobseeker_profile.get_status_display }}
                             </span>
                         </div>
                     {% else %}
@@ -735,6 +755,12 @@
                     <span class="lang-text" data-en="Social Network & Jobs" data-ar="الشبكة الاجتماعية والاعتماد">Social Network & Jobs</span>
                 </div>
 
+                <a href="{% url 'moderation_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'moderation_dashboard' %}active{% endif %}">
+                    <i class="bi bi-shield-shaded flex-shrink-0 text-warning"></i>
+                    <span class="lang-text nav-link-text" data-en="Moderation Hub" data-ar="لوحة الإشراف والحماية">Moderation Hub</span>
+                    <span class="badge bg-danger ms-auto flex-shrink-0" style="font-size: 0.65rem;">Safety</span>
+                </a>
+
                 <a href="{% url 'master_job_posts_queue' %}" class="nav-link {% if 'job-posts' in request.path %}active{% endif %}">
                     <i class="bi bi-megaphone-fill flex-shrink-0"></i>
                     <span class="lang-text nav-link-text" data-en="Job Posts Queue" data-ar="مراجعة طلبات التوظيف">Job Posts Queue</span>
@@ -771,6 +797,87 @@
                         Customer tenant workspaces are locked. Master admin operates in platform management mode.
                     </p>
                 </div>
+                {% elif is_moderator %}
+                <!-- PLATFORM MODERATOR NAVIGATION (RESTRICTED ACCESS - NO GOD MODE) -->
+                <div class="nav-section-title text-danger d-flex align-items-center gap-1">
+                    <span class="flex-shrink-0">🛡️</span>
+                    <span class="lang-text" data-en="Safety & Moderation" data-ar="لوحة الإشراف والحماية">Safety & Moderation</span>
+                </div>
+
+                <a href="{% url 'moderation_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'moderation_dashboard' %}active{% endif %}">
+                    <i class="bi bi-shield-shaded flex-shrink-0 text-danger"></i>
+                    <span class="lang-text nav-link-text" data-en="Moderator Hub" data-ar="مركز الإشراف">Moderator Hub</span>
+                    <span class="badge bg-danger ms-auto flex-shrink-0" style="font-size: 0.65rem;">Restricted</span>
+                </a>
+
+                <a href="{% url 'master_jobseekers_queue' %}" class="nav-link {% if 'job-seekers' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-check-fill flex-shrink-0 text-primary"></i>
+                    <span class="lang-text nav-link-text" data-en="Candidate Approvals" data-ar="اعتماد المرشحين">Candidate Approvals</span>
+                    {% if pending_jobseekers_count > 0 %}
+                    <span class="badge bg-danger ms-auto flex-shrink-0" style="font-size: 0.65rem;">{{ pending_jobseekers_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'master_job_posts_queue' %}" class="nav-link {% if 'job-posts' in request.path %}active{% endif %}">
+                    <i class="bi bi-megaphone-fill flex-shrink-0 text-warning"></i>
+                    <span class="lang-text nav-link-text" data-en="Job Posts Queue" data-ar="مراجعة الوظائف">Job Posts Queue</span>
+                    {% if pending_jobs_count > 0 %}
+                    <span class="badge bg-warning text-dark ms-auto flex-shrink-0" style="font-size: 0.65rem;">{{ pending_jobs_count }}</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% url 'master_referrals_list' %}" class="nav-link {% if 'referrals' in request.path %}active{% endif %}">
+                    <i class="bi bi-link-45deg flex-shrink-0 text-info"></i>
+                    <span class="lang-text nav-link-text" data-en="1-Time Referral Links" data-ar="روابط الإحالة الفردية">1-Time Referral Links</span>
+                </a>
+
+                <a href="{% url 'jobs_feed' %}" class="nav-link {% if request.resolver_match.url_name == 'jobs_feed' %}active{% endif %}">
+                    <i class="bi bi-broadcast flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text" data-en="Live Social Feed" data-ar="منصة عروض العمل">Live Social Feed</span>
+                </a>
+
+                <!-- Moderator Restricted Access Notice in Sidebar -->
+                <div class="card bg-dark border-danger border-opacity-50 p-2 mt-3 text-light flex-shrink-0">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-shield-lock-fill text-danger fs-5 flex-shrink-0"></i>
+                        <span class="small fw-bold text-light text-nowrap">Restricted Moderator Mode</span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 0.70rem; line-height: 1.25;">
+                        Content & user moderation only. Tenant company financials, payroll, and supreme mode roaming are strictly locked.
+                    </p>
+                </div>
+                {% elif is_jobseeker %}
+                <!-- CANDIDATE / WORKER SOCIAL PORTAL NAVIGATION -->
+                <div class="nav-section-title text-primary d-flex align-items-center gap-1">
+                    <span class="flex-shrink-0">🌐</span>
+                    <span class="lang-text" data-en="Manpower Social Hub" data-ar="منصة العمل والوظائف">Manpower Social Hub</span>
+                </div>
+
+                <a href="{% url 'jobs_feed' %}" class="nav-link {% if request.resolver_match.url_name == 'jobs_feed' or request.resolver_match.url_name == 'job_detail' %}active{% endif %}">
+                    <i class="bi bi-broadcast flex-shrink-0 text-primary"></i>
+                    <span class="lang-text nav-link-text" data-en="Live Job Feed" data-ar="عروض العمل المباشرة">Live Job Feed</span>
+                </a>
+
+                <a href="{% url 'candidate_referrals' %}" class="nav-link {% if 'referrals' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-plus-fill flex-shrink-0 text-success"></i>
+                    <span class="lang-text nav-link-text" data-en="Invite a Colleague" data-ar="دعوة زميل مهني">Invite a Colleague</span>
+                    <span class="badge bg-success ms-auto flex-shrink-0" style="font-size: 0.62rem;">Viral</span>
+                </a>
+
+                <div class="nav-section-title mt-3 lang-text" data-en="Account & Status" data-ar="الحساب والتحقق">Account & Status</div>
+
+                <div class="card bg-dark border-secondary border-opacity-50 p-2 mt-2 text-light flex-shrink-0">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-patch-check-fill text-success fs-6 flex-shrink-0"></i>
+                        <span class="small fw-bold text-light text-nowrap">Verified Candidate ID</span>
+                    </div>
+                    <div class="text-muted" style="font-size: 0.70rem; line-height: 1.35;">
+                        Name: <strong>{{ jobseeker_profile.full_name }}</strong><br>
+                        Iqama: <code>{{ jobseeker_profile.iqama_number }}</code><br>
+                        City: <strong>{{ jobseeker_profile.current_city }}</strong><br>
+                        Status: <strong class="text-{% if jobseeker_profile.status == 'active' %}success{% else %}warning{% endif %}">{{ jobseeker_profile.get_status_display }}</strong>
+                    </div>
+                </div>
                 {% else %}
                 <!-- TENANT COMPANY OPERATIONS (Company Admin or Supreme Mode) -->
                 {% if is_supreme_mode %}
@@ -780,70 +887,60 @@
                 </div>
                 {% endif %}
 
-                <div class="nav-section-title mt-2 lang-text" data-en="HR & Operations" data-ar="الموارد البشرية والعمليات">HR & Operations</div>
+                <div class="nav-section-title mt-1 lang-text" data-en="Overview" data-ar="نظرة عامة">Overview</div>
                 
-                <a href="{% url 'salary_disbursements' %}" class="nav-link {% if 'disbursements' in request.path %}active{% endif %}">
-                    <i class="bi bi-cash-stack flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Salary Disbursements" data-ar="صرف الرواتب">Salary Disbursements</span>
-                    <span class="badge bg-primary ms-auto flex-shrink-0" style="font-size: 0.65rem;">Roster</span>
-                </a>
-
                 <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="bi bi-grid-1x2-fill flex-shrink-0"></i>
                     <span class="lang-text nav-link-text" data-en="Dashboard" data-ar="لوحة التحكم">Dashboard</span>
                 </a>
 
-                <a href="{% url 'employees_list' %}" class="nav-link {% if 'employees' in request.path and request.resolver_match.url_name != 'master_dashboard' and request.resolver_match.url_name != 'master_company_add' and 'disbursements' not in request.path %}active{% endif %}">
+                <div class="nav-section-title mt-2 lang-text" data-en="Workforce & Sites" data-ar="العمال والمشاريع">Workforce & Sites</div>
+
+                <a href="{% url 'employees_list' %}" class="nav-link {% if 'employees' in request.path and request.resolver_match.url_name != 'master_dashboard' and request.resolver_match.url_name != 'master_company_add' and 'disbursements' not in request.path and 'two-matched' not in request.path %}active{% endif %}">
                     <i class="bi bi-people-fill flex-shrink-0"></i>
                     <span class="lang-text nav-link-text" data-en="Workers Directory" data-ar="دليل العمال">Workers Directory</span>
                 </a>
 
+                <a href="{% url 'company_two_matched_onboard' %}" class="nav-link {% if 'two-matched' in request.path %}active{% endif %}">
+                    <i class="bi bi-lightning-charge-fill text-warning flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text text-warning fw-semibold" data-en="Quick Hire" data-ar="توظيف سريع">Quick Hire</span>
+                    <span class="badge bg-warning text-dark ms-auto flex-shrink-0" style="font-size: 0.62rem;">Fast</span>
+                </a>
+
                 <a href="{% url 'clients_list' %}" class="nav-link {% if 'clients' in request.path %}active{% endif %}">
-                    <i class="bi bi-briefcase-fill flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Clients & Projects" data-ar="العملاء والمشاريع">Clients & Projects</span>
+                    <i class="bi bi-building-check flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text" data-en="Clients & Deployments" data-ar="العملاء والمواقع">Clients & Deployments</span>
                     {% if current_company and current_company.unemployed_workers_count > 0 %}
-                    <span class="badge bg-warning text-dark ms-auto flex-shrink-0" style="font-size: 0.65rem;" title="Unemployed / Bench Workers">
-                        {{ current_company.unemployed_workers_count }} Bench
+                    <span class="badge bg-warning text-dark ms-auto flex-shrink-0" style="font-size: 0.65rem;" title="Available Standby Workers">
+                        {{ current_company.unemployed_workers_count }} Available
                     </span>
                     {% endif %}
                 </a>
 
-                <div class="nav-section-title mt-2 text-primary d-flex align-items-center gap-1">
-                    <span class="flex-shrink-0">📢</span>
-                    <span class="lang-text" data-en="Manpower Hiring & Jobs" data-ar="التوظيف والمهن">Manpower Hiring & Jobs</span>
-                </div>
+                <div class="nav-section-title mt-2 lang-text" data-en="Payroll & Finance" data-ar="الرواتب والمالية">Payroll & Finance</div>
 
-                <a href="{% url 'jobs_feed' %}" class="nav-link {% if request.resolver_match.url_name == 'jobs_feed' %}active{% endif %}">
-                    <i class="bi bi-broadcast flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Social Jobs Feed" data-ar="منصة عروض العمل">Social Jobs Feed</span>
-                </a>
-
-                <a href="{% url 'company_jobs_list' %}" class="nav-link {% if 'jobs/company' in request.path %}active{% endif %}">
-                    <i class="bi bi-megaphone-fill flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Company Job Posts" data-ar="إعلانات وظائف الشركة">Company Job Posts</span>
-                </a>
-
-                <a href="{% url 'company_two_matched_onboard' %}" class="nav-link {% if 'two-matched' in request.path %}active{% endif %}">
-                    <i class="bi bi-lightning-charge-fill text-warning flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text text-warning fw-semibold" data-en="Two-Matched Onboard" data-ar="توظيف ثنائي سريع">Two-Matched Onboard</span>
-                </a>
-
-                <a href="{% url 'properties_list' %}" class="nav-link {% if 'properties' in request.path %}active{% endif %}">
-                    <i class="bi bi-house-door-fill flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Accommodations" data-ar="السكن والمواقع">Accommodations</span>
-                </a>
-
-                <a href="{% url 'iqama_expiry' %}" class="nav-link {% if 'iqama' in request.path %}active{% endif %}">
-                    <i class="bi bi-card-checklist flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Iqama Tracker" data-ar="متابعة الإقامات">Iqama Tracker</span>
+                <a href="{% url 'salary_disbursements' %}" class="nav-link {% if 'disbursements' in request.path %}active{% endif %}">
+                    <i class="bi bi-cash-stack flex-shrink-0 text-success"></i>
+                    <span class="lang-text nav-link-text fw-semibold" data-en="Payroll & Salaries" data-ar="مسير الرواتب">Payroll & Salaries</span>
+                    <span class="badge bg-success ms-auto flex-shrink-0" style="font-size: 0.65rem;">Monthly</span>
                 </a>
 
                 <a href="{% url 'spending_tracker' %}" class="nav-link {% if 'spending' in request.path or 'expenses' in request.path %}active{% endif %}">
                     <i class="bi bi-wallet2 flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Spending Tracker" data-ar="متابعة المصاريف">Spending Tracker</span>
+                    <span class="lang-text nav-link-text" data-en="Expenses & Advances" data-ar="المصاريف والسلف">Expenses & Advances</span>
                 </a>
 
-                <div class="nav-section-title mt-2 lang-text" data-en="Leaves & Policy" data-ar="الإجازات والسياسات">Leaves & Policy</div>
+                <a href="{% url 'iqama_expiry' %}" class="nav-link {% if 'iqama' in request.path %}active{% endif %}">
+                    <i class="bi bi-card-checklist flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text" data-en="Iqama & Visas" data-ar="متابعة الإقامات">Iqama & Visas</span>
+                </a>
+
+                <a href="{% url 'properties_list' %}" class="nav-link {% if 'properties' in request.path %}active{% endif %}">
+                    <i class="bi bi-house-door-fill flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text" data-en="Worker Housing" data-ar="سكن العمال">Worker Housing</span>
+                </a>
+
+                <div class="nav-section-title mt-2 lang-text" data-en="Time Off & Hiring" data-ar="الإجازات والتوظيف">Time Off & Hiring</div>
 
                 <a href="{% url 'leave_list' %}" class="nav-link {% if 'leave' in request.path and 'contract' not in request.path %}active{% endif %}">
                     <i class="bi bi-calendar-check-fill flex-shrink-0"></i>
@@ -851,20 +948,24 @@
                 </a>
 
                 <a href="{% url 'holiday_list' %}" class="nav-link {% if 'holidays' in request.path %}active{% endif %}">
-                    <i class="bi bi-calendar3 flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Holidays" data-ar="العطل الرسمية">Holidays</span>
+                    <i class="bi bi-calendar-heart flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text" data-en="Holidays & Policy" data-ar="العطل الرسمية">Holidays & Policy</span>
                 </a>
 
-                <a href="{% url 'policy_edit' %}" class="nav-link {% if 'policy' in request.path or 'contract' in request.path %}active{% endif %}">
-                    <i class="bi bi-sliders flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Leave Policy" data-ar="سياسة الإجازات">Leave Policy</span>
+                <a href="{% url 'jobs_feed' %}" class="nav-link {% if request.resolver_match.url_name == 'jobs_feed' %}active{% endif %}">
+                    <i class="bi bi-briefcase flex-shrink-0"></i>
+                    <span class="lang-text nav-link-text" data-en="Job Marketplace" data-ar="منصة التوظيف">Job Marketplace</span>
                 </a>
 
-                <div class="nav-section-title mt-2 lang-text" data-en="Reports & Analytics" data-ar="التقارير">Reports & Analytics</div>
+                <a href="{% url 'company_referrals' %}" class="nav-link {% if 'company/referrals' in request.path %}active{% endif %}">
+                    <i class="bi bi-link-45deg flex-shrink-0 text-primary"></i>
+                    <span class="lang-text nav-link-text" data-en="Invite Candidates" data-ar="دعوة مرشحين">Invite Candidates</span>
+                    <span class="badge bg-primary ms-auto flex-shrink-0" style="font-size: 0.62rem;">1-Time</span>
+                </a>
 
                 <a href="{% url 'reports' %}" class="nav-link {% if 'reports' in request.path %}active{% endif %}">
                     <i class="bi bi-file-earmark-spreadsheet-fill flex-shrink-0"></i>
-                    <span class="lang-text nav-link-text" data-en="Excel Reports" data-ar="تقارير إكسل">Excel Reports</span>
+                    <span class="lang-text nav-link-text" data-en="Reports & Export" data-ar="تقارير إكسل">Reports & Export</span>
                 </a>
                 {% endif %}
 
@@ -911,18 +1012,18 @@
                 {% endif %}
 
                 <!-- User info & Logout at bottom -->
-                <div class="pt-2 border-top border-secondary border-opacity-25">
+                <div class="pt-3 pb-1 border-top border-secondary border-opacity-25 mt-auto" style="flex-shrink: 0;">
                     <div class="d-flex align-items-center justify-content-between px-2">
-                        <div class="d-flex align-items-center gap-2 text-truncate">
-                            <div class="rounded-circle bg-primary bg-opacity-25 text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 34px; height: 34px; min-width: 34px;">
+                        <div class="d-flex align-items-center gap-2 text-truncate" style="min-width: 0; flex: 1 1 auto;">
+                            <div class="rounded-circle bg-primary bg-opacity-25 text-primary d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 34px; height: 34px; min-width: 34px;">
                                 {{ request.user.username|slice:":1"|upper }}
                             </div>
-                            <div class="text-truncate">
+                            <div class="text-truncate" style="min-width: 0;">
                                 <div class="text-white small fw-bold text-truncate">{{ request.user.username }}</div>
-                                <div class="text-muted" style="font-size: 0.72rem;">{% if is_master_admin %}Master Admin{% else %}Company Admin{% endif %}</div>
+                                <div class="text-muted text-truncate" style="font-size: 0.72rem;">{% if is_master_admin %}Master Admin{% else %}Company Admin{% endif %}</div>
                             </div>
                         </div>
-                        <a href="{% url 'logout' %}" class="text-danger p-2" title="Logout">
+                        <a href="{% url 'logout' %}" class="text-danger p-2 flex-shrink-0" title="Logout">
                             <i class="bi bi-box-arrow-right fs-5"></i>
                         </a>
                     </div>
@@ -931,58 +1032,80 @@
 
             <!-- Main Content Area -->
             <div class="col-md-9 col-lg-10 main-content">
-                <!-- Top Portal Navigation Tabs -->
-                {% if current_company or is_impersonating or not is_master_admin %}
-                <div class="top-nav-tabs-bar mb-3 bg-white p-2 rounded-3 border shadow-sm d-flex align-items-center justify-content-between gap-2">
-                    <div class="d-flex align-items-center gap-2 overflow-auto py-1 flex-grow-1" style="scrollbar-width: thin;">
-                        <a href="{% url 'salary_disbursements' %}" class="btn btn-sm {% if 'disbursements' in request.path %}btn-primary fw-bold text-white shadow-sm{% else %}btn-outline-primary fw-semibold{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-cash-stack fs-6"></i>
-                            <span class="lang-text" data-en="Salary Disbursements" data-ar="صرف الرواتب">Salary Disbursements</span>
-                            <span class="badge bg-warning text-dark ms-1" style="font-size: 0.68rem;">Payroll</span>
+                <!-- Master Admin: Normal Status Bar (Customer Data Protected) -->
+                {% if is_master_admin and not is_supreme_mode %}
+                <div class="master-banner mb-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 shadow-sm" style="background: linear-gradient(90deg, #0f172a, #1e293b); border: 1px solid #334155;">
+                    <div class="d-flex align-items-center gap-2 text-truncate" style="min-width: 0; flex: 1 1 auto;">
+                        <i class="bi bi-shield-check fs-5 text-success flex-shrink-0"></i>
+                        <div class="text-truncate">
+                            <strong class="text-warning">Master Platform Control</strong>
+                            <span class="text-light opacity-75 small ms-2 d-none d-sm-inline">— Customer Workspaces Locked (Data Protected)</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
+                        <button type="button" class="theme-toggle-btn btn btn-sm btn-outline-light py-1 px-2 d-flex align-items-center gap-1" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="min-height: 32px; border-radius: 6px;">
+                            <i class="bi bi-moon-stars-fill theme-icon-dark"></i>
+                            <i class="bi bi-sun-fill theme-icon-light d-none text-warning"></i>
+                            <span class="small theme-text">Dark</span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning py-1 px-3 fw-semibold text-nowrap d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#supremeModeModal">
+                            <i class="bi bi-shield-lock-fill"></i> Supreme Mode: Locked
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Master Admin: Supreme Support Mode Warning Banner (Customer Workspace Active) -->
+                {% if is_master_admin and is_supreme_mode %}
+                <div class="alert alert-danger mb-3 py-2 px-3 border-0 rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 shadow" style="background: #991b1b; color: white;">
+                    <div class="d-flex align-items-center gap-2 text-truncate" style="min-width: 0; flex: 1 1 auto;">
+                        <div class="spinner-grow spinner-grow-sm text-warning flex-shrink-0" role="status"></div>
+                        <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
+                        <div class="text-truncate">
+                            <strong class="text-warning">👑 SUPREME SUPPORT MODE:</strong>
+                            <span>Operating inside customer workspace: <strong>{{ current_company.name }}</strong> (CR: {{ current_company.cr_number|default:"N/A" }})</span>
+                            {% if supreme_mode_reason %}
+                                <span class="d-none d-lg-inline text-light opacity-90 ms-2">• Reason: <em>{{ supreme_mode_reason }}</em></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
+                        <a href="{% url 'master_dashboard' %}" class="btn btn-sm btn-outline-light py-1 px-2 fw-semibold text-nowrap">
+                            Master Dashboard
                         </a>
-                        <a href="{% url 'dashboard' %}" class="btn btn-sm {% if request.resolver_match.url_name == 'dashboard' %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-grid-1x2-fill"></i>
-                            <span class="lang-text" data-en="Dashboard" data-ar="لوحة التحكم">Dashboard</span>
-                        </a>
-                        <a href="{% url 'employees_list' %}" class="btn btn-sm {% if 'employees' in request.path and 'disbursements' not in request.path and request.resolver_match.url_name != 'master_dashboard' and request.resolver_match.url_name != 'master_company_add' %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-people-fill"></i>
-                            <span class="lang-text" data-en="Workers" data-ar="العمال">Workers</span>
-                        </a>
-                        <a href="{% url 'clients_list' %}" class="btn btn-sm {% if 'clients' in request.path %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-briefcase-fill"></i>
-                            <span class="lang-text" data-en="Clients & Bench" data-ar="العملاء">Clients</span>
-                        </a>
-                        <a href="{% url 'jobs_feed' %}" class="btn btn-sm {% if 'jobs' in request.path %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-megaphone-fill text-warning"></i>
-                            <span class="lang-text" data-en="Jobs & Hiring" data-ar="منصة التوظيف">Jobs & Hiring</span>
-                        </a>
-                        <a href="{% url 'company_two_matched_onboard' %}" class="btn btn-sm {% if 'two-matched' in request.path %}btn-warning text-dark fw-bold{% else %}btn-outline-warning text-dark fw-semibold border{% endif %} d-flex align-items-center gap-2 text-nowrap" title="Two-Matched Fast Onboard">
-                            <i class="bi bi-lightning-charge-fill"></i>
-                            <span class="lang-text" data-en="Fast Onboard" data-ar="توظيف سريع">Fast Onboard</span>
-                        </a>
-                        <a href="{% url 'spending_tracker' %}" class="btn btn-sm {% if 'spending' in request.path %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-wallet2"></i>
-                            <span class="lang-text" data-en="Spending Tracker" data-ar="المصاريف والسلف">Spending</span>
-                        </a>
-                        <a href="{% url 'iqama_expiry' %}" class="btn btn-sm {% if 'iqama' in request.path %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-card-checklist"></i>
-                            <span class="lang-text" data-en="Iqamas" data-ar="الإقامات">Iqamas</span>
-                        </a>
-                        <a href="{% url 'leave_list' %}" class="btn btn-sm {% if 'leave' in request.path %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-calendar-check"></i>
-                            <span class="lang-text" data-en="Leaves" data-ar="الإجازات">Leaves</span>
-                        </a>
-                        <a href="{% url 'reports' %}" class="btn btn-sm {% if 'reports' in request.path %}btn-dark fw-bold text-white{% else %}btn-light text-dark border{% endif %} d-flex align-items-center gap-2 text-nowrap">
-                            <i class="bi bi-file-earmark-spreadsheet"></i>
-                            <span class="lang-text" data-en="Reports" data-ar="التقارير">Reports</span>
+                        <a href="{% url 'supreme_mode_exit' %}" class="btn btn-sm btn-light text-danger fw-bold shadow-sm text-nowrap">
+                            <i class="bi bi-lock-fill me-1"></i> Lock & Exit Supreme Mode
                         </a>
                     </div>
-                    <div class="d-flex align-items-center gap-1 flex-shrink-0 ms-1">
-                        <button type="button" class="theme-toggle-btn btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="border-radius: 6px; font-weight: 500; height: 31px;">
+                </div>
+                {% endif %}
+
+                <!-- Top Portal Breadcrumb & Context Bar -->
+                {% if current_company or is_impersonating or not is_master_admin %}
+                <div class="top-context-header mb-3 bg-white p-2 px-3 rounded-3 border shadow-sm d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center gap-2 text-truncate" style="min-width: 0; flex: 1 1 auto;">
+                        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1 text-truncate" style="max-width: 240px;">
+                            <i class="bi bi-building me-1"></i>{{ current_company.name|default:"Workspace" }}
+                        </span>
+                        {% if current_company.worker_count %}
+                        <span class="text-muted small d-none d-sm-inline text-nowrap">
+                            • {{ current_company.worker_count }}/{{ current_company.max_employees }} Active Workers
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
+                        <a href="{% url 'employee_add' %}" class="btn btn-sm btn-primary fw-semibold d-none d-md-inline-flex align-items-center gap-1 shadow-xs">
+                            <i class="bi bi-person-plus-fill"></i> + Add Worker
+                        </a>
+                        <a href="{% url 'salary_disbursements' %}" class="btn btn-sm btn-outline-success fw-semibold d-none d-md-inline-flex align-items-center gap-1">
+                            <i class="bi bi-cash-stack"></i> Payroll
+                        </a>
+                        <button type="button" class="theme-toggle-btn btn btn-sm btn-outline-secondary d-none d-md-flex align-items-center gap-1 py-1 px-2" onclick="toggleTheme()" title="Toggle Day/Dark Mode" style="border-radius: 6px; font-weight: 500; height: 31px;">
                             <i class="bi bi-moon-stars-fill theme-icon-dark"></i>
                             <i class="bi bi-sun-fill theme-icon-light d-none text-warning"></i>
                             <span class="small theme-text d-none d-md-inline">Dark</span>
                         </button>
+                        <button class="lang-switch-btn d-none d-md-inline-block" onclick="toggleLanguage()" title="Toggle English/Arabic" style="height: 31px; padding: 2px 8px; font-size: 0.78rem; font-weight: 600; color: #64748b; border-color: #cbd5e1;">EN/عربي</button>
                     </div>
                 </div>
                 {% endif %}
@@ -1194,8 +1317,8 @@
                 });
             }
 
-            // Auto-close mobile offcanvas when clicking modal trigger buttons
-            document.querySelectorAll('#sidebarNav [data-bs-toggle="modal"]').forEach(btn => {
+            // Auto-close mobile offcanvas when clicking nav links or modal trigger buttons
+            document.querySelectorAll('#sidebarNav a.nav-link, #sidebarNav [data-bs-toggle="modal"]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     if (window.innerWidth < 768 && sidebarEl) {
                         const offcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);

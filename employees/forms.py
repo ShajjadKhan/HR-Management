@@ -603,7 +603,7 @@ class JobSeekerRegisterForm(forms.Form):
     Worker registration form guarded strictly by one-time referral link.
     Requires unique Iqama and unique Phone.
     """
-    referral_token = forms.CharField(widget=forms.HiddenInput())
+    referral_token = forms.CharField(widget=forms.HiddenInput(), required=False)
     
     # Login credentials
     username = forms.CharField(
