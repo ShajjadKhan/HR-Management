@@ -137,5 +137,16 @@ X_FRAME_OPTIONS = 'DENY'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 86400  # 24 hours
 
+# Reverse Proxy & Domain Security
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        'DJANGO_CSRF_TRUSTED_ORIGINS',
+        'https://hr.shajjadkhan.com,https://hr.tawreedflow.com,https://hr.tawreeedflow.com,http://127.0.0.1:8899,http://localhost:8899'
+    ).split(',')
+    if origin.strip()
+]
+
 
 
